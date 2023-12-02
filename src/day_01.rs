@@ -17,7 +17,7 @@ pub mod part1 {
 
     #[cfg(test)]
     mod tests {
-        use super::get_value_from_line;
+        use super::*;
 
         #[test]
         fn get_value_from_line_test() {
@@ -99,7 +99,7 @@ pub mod part2 {
 
     #[cfg(test)]
     mod tests {
-        use super::get_value_from_line;
+        use super::*;
 
         #[test]
         fn get_value_from_line_test() {

@@ -38,9 +38,7 @@ fn get_game_index(line: &str) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::get_game_index;
-    use super::parse_string;
-    use super::Game;
+    use super::*;
 
     #[test]
     fn get_game_index_test() {
@@ -69,8 +67,7 @@ mod tests {
 }
 
 pub mod part1 {
-    use super::parse_string;
-    use super::get_game_index;
+    use super::*;
 
     fn is_good_game(line: &str) -> bool {
         let mut max_red = 0;
@@ -101,7 +98,7 @@ pub mod part1 {
 }
 
 pub mod part2 {
-    use super::parse_string;
+    use super::*;
 
     fn get_powers(line: &str) -> u64 {
         let mut max_red = 0;
