@@ -37,6 +37,136 @@ impl Matrix {
     }
 }
 
+// Scans left starting from the current position and tries to find a number
+// that is strickly to the left of it. Returns 0 if not found (meaning that
+// there is a non-number character to the left of i, j.
+// Will return 0 in case of 12.*.. (where * is a starting position)
+// Will return 12 in case of .12*..
+fn scan_left(matrix: &Matrix, i: usize, j: usize) -> u64 {
+    let mut current_col: i32 = j as i32 - 1;
+    let mut number: u64 = 0;
+    let mut pow = 1;
+    loop {
+        if current_col < 0 {
+            break;
+        }
+        let c = matrix.get_value(i, current_col as usize).to_digit(10);
+        match c {
+            Some(value) => {
+                number += value as u64 * pow;
+                pow *= 10;
+            }
+            None => break,
+        }
+        current_col -= 1;
+    }
+    return number;
+}
+
+// Scans right starting from the current position and tries to find a number
+// that is strickly to the right of it. Returns 0 if not found (meaning that
+// there is a non-number character to the right of i, j
+fn scan_right(matrix: &Matrix, i: usize, j: usize) -> u64 {
+    let mut current_col: i32 = j as i32 + 1;
+    let mut number: u64 = 0;
+    loop {
+        if current_col >= matrix.cols() as i32 {
+            break;
+        }
+        let c = matrix.get_value(i, current_col as usize).to_digit(10);
+        match c {
+            Some(value) => {
+                number *= 10;
+                number += value as u64;
+            }
+            None => break,
+        }
+        current_col += 1;
+    }
+    return number;
+}
+
+// Scans a line in both directions starting from a given position and returns
+// a vector of numbers adjacent to (sitting next to or overlapping with the
+// current position)
+fn scan_line(matrix: &Matrix, i: usize, j: usize) -> Vec<u64> {
+    let c = matrix.get_value(i, j);
+    let mut result: Vec<u64> = Vec::new();
+    if c == '.' {
+        let left = scan_left(matrix, i, j);
+        if left > 0 {
+            result.push(left);
+        }
+        let right = scan_right(matrix, i, j);
+        if right > 0 {
+            result.push(right);
+        }
+    } else if c.is_digit(10) {
+        let mut current_col = j;
+        // scan left and find number beginning
+        loop {
+            let c = matrix.get_value(i, current_col);
+            if !c.is_digit(10) {
+                current_col += 1;
+                break;
+            }
+            if current_col == 0 {
+                break;
+            }
+            current_col -= 1;
+        }
+
+        // now scan left to right and get the number
+        let mut number: u64 = 0;
+        loop {
+            let c = matrix.get_value(i, current_col);
+            if !c.is_digit(10) || current_col >= matrix.cols() {
+                break;
+            }
+            number *= 10;
+            number += c.to_digit(10).unwrap() as u64;
+            current_col += 1;
+        }
+        result.push(number);
+    }
+    result
+}
+
+// Gets a vector of numbers adjacent to the specified i, j
+fn get_adjacent_numbers(matrix: &Matrix, i: usize, j: usize) -> Vec<u64> {
+    let mut result: Vec<u64> = Vec::new();
+
+    // scan left
+    if j > 0 && matrix.get_value(i, j - 1).is_digit(10) {
+        let value = scan_left(matrix, i, j);
+        if value > 0 {
+            result.push(value);
+        }
+    }
+
+    // scan right
+    if j < matrix.cols() - 1 && matrix.get_value(i, j + 1).is_digit(10) {
+        let value = scan_right(matrix, i, j);
+        if value > 0 {
+            result.push(value);
+        }
+    }
+
+    // scan top
+    if i > 0 {
+        let numbers = scan_line(matrix, i - 1, j);
+        result.extend(numbers);
+    }
+
+    // scan bottom
+    if i < matrix.rows() - 1 {
+        let numbers = scan_line(matrix, i + 1, j);
+        result.extend(numbers);
+    }
+
+    return result;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -57,117 +187,115 @@ mod tests {
         assert_eq!('8', matrix.get_value(2, 1));
         assert_eq!(',', matrix.get_value(3, 2));
     }
+
+    #[test]
+    fn get_adjacent_numbers_test() {
+        {
+            let mut matrix = Matrix::default();
+            matrix.add_line("134..45".to_owned());
+            matrix.add_line("1.3*.45".to_owned());
+            matrix.add_line("7...89.".to_owned());
+
+            let numbers = get_adjacent_numbers(&matrix, 1, 3);
+            assert_eq!(3, numbers.len());
+            assert!(numbers.contains(&134));
+            assert!(numbers.contains(&3));
+            assert!(numbers.contains(&89));
+        }
+        {
+            let mut matrix = Matrix::default();
+            matrix.add_line("134..45".to_owned());
+            matrix.add_line("12.*1.5".to_owned());
+            matrix.add_line("7...89.".to_owned());
+
+            let numbers = get_adjacent_numbers(&matrix, 1, 3);
+            assert_eq!(3, numbers.len());
+            assert!(numbers.contains(&134));
+            assert!(numbers.contains(&1));
+            assert!(numbers.contains(&89));
+        }
+        {
+            let mut matrix = Matrix::default();
+            matrix.add_line("134..45".to_owned());
+            matrix.add_line("124*195".to_owned());
+            matrix.add_line("7...89.".to_owned());
+
+            let numbers = get_adjacent_numbers(&matrix, 1, 3);
+            assert_eq!(4, numbers.len());
+            assert!(numbers.contains(&134));
+            assert!(numbers.contains(&124));
+            assert!(numbers.contains(&195));
+            assert!(numbers.contains(&89));
+        }
+        {
+            let mut matrix = Matrix::default();
+            matrix.add_line("13...45".to_owned());
+            matrix.add_line("12.*.95".to_owned());
+            matrix.add_line("7....9.".to_owned());
+
+            let numbers = get_adjacent_numbers(&matrix, 1, 3);
+            assert_eq!(0, numbers.len());
+        }
+        {
+            let mut matrix = Matrix::default();
+            matrix.add_line(".2375..".to_owned());
+            matrix.add_line("12.*.95".to_owned());
+            matrix.add_line("...1...".to_owned());
+
+            let numbers = get_adjacent_numbers(&matrix, 1, 3);
+            println!("{:?}", numbers);
+            assert_eq!(2, numbers.len());
+            assert!(numbers.contains(&2375));
+            assert!(numbers.contains(&1));
+        }
+    }
 }
 
 pub mod part1 {
     use super::*;
 
-    fn value_if_has_adjacent_cymbols(
-        matrix: &Matrix,
-        row: i32,
-        col_start: i32,
-        col_end: i32,
-    ) -> u64 {
-        let mut neighbors: Vec<(i32, i32)> = Vec::new();
+    pub fn solve(file_name: &str) -> u64 {
+        let mut result: u64 = 0;
+        let matrix = Matrix::read_from_file(file_name);
 
-        if row > 0 {
-            for i in col_start - 1..=col_end + 1 {
-                if i >= 0 && i < matrix.cols() as i32 {
-                    neighbors.push((row - 1, i));
+        for i in 0..matrix.rows() {
+            for j in 0..matrix.cols() {
+                let c = matrix.get_value(i, j);
+                if c.is_digit(10) || c == '.' {
+                    continue;
                 }
-            }
-        }
-        if col_start > 0 {
-            neighbors.push((row, col_start - 1));
-        }
-        if col_end < matrix.cols() as i32 - 1 {
-            neighbors.push((row, col_end + 1));
-        }
-        if row < matrix.rows() as i32 - 1 {
-            for i in col_start - 1..=col_end + 1 {
-                if i >= 0 && i < matrix.cols() as i32 {
-                    neighbors.push((row + 1, i));
+                let numbers = get_adjacent_numbers(&matrix, i, j);
+                for num in numbers {
+                    result += num;
                 }
             }
         }
 
-        for n in neighbors {
-            let c = matrix.get_value(n.0 as usize, n.1 as usize);
-            if c.is_digit(10) || c == '.' {
-                continue;
-            }
-            let mut result = 0;
-            for i in col_start..=col_end {
-                result *= 10;
-                result += matrix
-                    .get_value(row as usize, i as usize)
-                    .to_digit(10)
-                    .unwrap();
-            }
-            return result as u64;
-        }
-        return 0;
+        result
     }
+}
+
+pub mod part2 {
+    use super::*;
 
     pub fn solve(file_name: &str) -> u64 {
         let mut result: u64 = 0;
         let matrix = Matrix::read_from_file(file_name);
 
-        let mut start: usize = 0;
-
         for i in 0..matrix.rows() {
-            let mut scanning_number = false;
             for j in 0..matrix.cols() {
                 let c = matrix.get_value(i, j);
-                if scanning_number {
-                    if !c.is_digit(10) {
-                        result += value_if_has_adjacent_cymbols(
-                            &matrix,
-                            i as i32,
-                            start as i32,
-                            j as i32 - 1,
-                        );
-                        scanning_number = false;
-                    } else if j == matrix.cols() - 1 {
-                        result += value_if_has_adjacent_cymbols(
-                            &matrix,
-                            i as i32,
-                            start as i32,
-                            j as i32,
-                        );
-                        scanning_number = false;
-                    }
-                } else {
-                    if c.is_digit(10) {
-                        start = j;
-                        scanning_number = true;
-                    }
+                if c != '*' {
+                    continue;
                 }
+                let numbers = get_adjacent_numbers(&matrix, i, j);
+                if numbers.len() != 2 {
+                    continue;
+                }
+                result += numbers[0] * numbers[1];
             }
         }
+
         result
-    }
-
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-
-        #[test]
-        fn has_adjacent_cymbols_test() {
-            {
-                let mut matrix = Matrix::default();
-                matrix.add_line(".....".to_owned());
-                matrix.add_line(".123.".to_owned());
-                matrix.add_line(".....".to_owned());
-                assert_eq!(0, value_if_has_adjacent_cymbols(&matrix, 1, 1, 3))
-            }
-            {
-                let mut matrix = Matrix::default();
-                matrix.add_line("*....".to_owned());
-                matrix.add_line(".123.".to_owned());
-                matrix.add_line(".....".to_owned());
-                assert_eq!(123, value_if_has_adjacent_cymbols(&matrix, 1, 1, 3))
-            }
-        }
     }
 }
