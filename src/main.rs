@@ -2,6 +2,7 @@ use std::env;
 
 mod day_01;
 mod day_02;
+mod day_03;
 
 fn main() {
     let input_root_path = env::var("AOC_2023_INPUT_PATH").unwrap();
@@ -25,4 +26,10 @@ fn main() {
     let answer = day_02::part2::solve(&day_02_path);
     println!("Day 02, part 2: {}", answer);
     assert_eq!(answer, 83105);
+
+    let day_03_path = format!("{}/day_03.txt", input_root_path);
+
+    let answer = day_03::part1::solve(&day_03_path);
+    println!("Day 03, part 1: {}", answer);
+    assert_eq!(answer, 531561);
 }
