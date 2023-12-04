@@ -46,5 +46,5 @@ fn main() {
 
     let answer = day_04::part2::solve(&day_04_path);
     println!("Day 04, part 2: {}", answer);
-    // assert_eq!(answer, 20407);
+    assert_eq!(answer, 23806951);
 }
