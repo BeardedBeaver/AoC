@@ -4,9 +4,13 @@ mod day_01;
 mod day_02;
 mod day_03;
 mod day_04;
+mod day_05;
 
 fn main() {
     let input_root_path = env::var("AOC_2023_INPUT_PATH").unwrap();
+
+    use std::time::Instant;
+    let now = Instant::now();
 
     let day_01_path = format!("{}/day_01.txt", input_root_path);
 
@@ -47,4 +51,17 @@ fn main() {
     let answer = day_04::part2::solve(&day_04_path);
     println!("Day 04, part 2: {}", answer);
     assert_eq!(answer, 23806951);
+
+    let day_05_path = format!("{}/day_05.txt", input_root_path);
+
+    let answer = day_05::part1::solve(&day_05_path);
+    println!("Day 05, part 1: {}", answer);
+    assert_eq!(answer, 910845529);
+
+    let answer = day_05::part2::solve(&day_05_path);
+    println!("Day 05, part 2: {}", answer);
+    assert_eq!(answer, 77435348);
+
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
 }
