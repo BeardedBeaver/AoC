@@ -9,13 +9,7 @@ struct Card {
 
 impl Card {
     pub fn num_wins(self: &Card) -> u64 {
-        let mut result: u64 = 0;
-        for num in &self.numbers {
-            if self.winning.contains(&num) {
-                result += 1;
-            }
-        }
-        result
+        self.numbers.intersection(&self.winning).count() as u64
     }
 
     pub fn parse(line: &str) -> Card {
@@ -29,11 +23,11 @@ impl Card {
         result.id = words[1].parse::<u64>().unwrap();
 
         let parts: Vec<&str> = parts[1].split(" | ").collect();
-        let numbers: Vec<&str> = parts[0].split_ascii_whitespace().collect();
-        let winning: Vec<&str> = parts[1].split_ascii_whitespace().collect();
+        let winning: Vec<&str> = parts[0].split_ascii_whitespace().collect();
+        let numbers: Vec<&str> = parts[1].split_ascii_whitespace().collect();
 
-        result.numbers = numbers.iter().map(|x| x.parse::<u64>().unwrap()).collect();
         result.winning = winning.iter().map(|x| x.parse::<u64>().unwrap()).collect();
+        result.numbers = numbers.iter().map(|x| x.parse::<u64>().unwrap()).collect();
 
         return result;
     }
@@ -128,34 +122,21 @@ pub mod part2 {
                 assert_eq!(1, count_cards(&cards));
             }
 
-            // simple test
+            // example case from the puzzle
             {
                 let mut cards = Vec::new();
                 cards.push(Card::parse(
                     "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53",
-                )); // 3 matches, copies next 2 two times, cards = 1, 2, 2
+                ));
                 cards.push(Card::parse(
                     "Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19",
-                )); // 2 matches, copies next one 2 * 2 = 4, cards = 1, 2, 4
+                ));
                 cards.push(Card::parse(
                     "Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1",
                 ));
 
                 assert_eq!(7, count_cards(&cards));
-            }
 
-            // less simple test
-            {
-                let mut cards = Vec::new();
-                cards.push(Card::parse(
-                    "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53",
-                ));
-                cards.push(Card::parse(
-                    "Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19",
-                ));
-                cards.push(Card::parse(
-                    "Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1",
-                ));
                 cards.push(Card::parse(
                     "Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83",
                 ));
@@ -164,26 +145,7 @@ pub mod part2 {
                 ));
 
                 assert_eq!(29, count_cards(&cards));
-            }
 
-            // small case from the puzzle
-            {
-                let mut cards = Vec::new();
-                cards.push(Card::parse(
-                    "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53",
-                ));
-                cards.push(Card::parse(
-                    "Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19",
-                ));
-                cards.push(Card::parse(
-                    "Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1",
-                ));
-                cards.push(Card::parse(
-                    "Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83",
-                ));
-                cards.push(Card::parse(
-                    "Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36",
-                ));
                 cards.push(Card::parse(
                     "Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11",
                 ));
