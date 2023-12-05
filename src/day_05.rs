@@ -123,11 +123,15 @@ pub mod part2 {
 
     fn solve_puzzle(puzzle: &Puzzle) -> u64 {
         let mut result = u64::MAX;
-        for i in 0..puzzle.seeds.len() / 2 {
-            let index = i * 2;
-            let start = puzzle.seeds[index];
-            let len = puzzle.seeds[index + 1];
-            for j in start..=start + len {
+
+        let inputs: Vec<(u64, u64)> = puzzle
+            .seeds
+            .chunks(2)
+            .map(|chunk| (chunk[0], chunk[1]))
+            .collect();
+
+        for i in inputs {
+            for j in i.0..=i.0 + i.1 {
                 let mut seed = j;
                 for map in puzzle.maps.iter() {
                     seed = map.transform(seed);
