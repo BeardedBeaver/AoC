@@ -121,6 +121,20 @@ pub mod part1 {
 pub mod part2 {
     use super::*;
 
+    fn solve_interval(mappings: &Vec<Map>, start: u64, len: u64) -> u64 {
+        let mut result = u64::MAX;
+
+        for i in start..=start + len {
+            let mut seed = i;
+            for map in mappings.iter() {
+                seed = map.transform(seed);
+            }
+            result = u64::min(result, seed);
+        }
+
+        result
+    }
+
     fn solve_puzzle(puzzle: &Puzzle) -> u64 {
         let mut result = u64::MAX;
 
@@ -131,13 +145,7 @@ pub mod part2 {
             .collect();
 
         for i in inputs {
-            for j in i.0..=i.0 + i.1 {
-                let mut seed = j;
-                for map in puzzle.maps.iter() {
-                    seed = map.transform(seed);
-                }
-                result = u64::min(result, seed);
-            }
+            result = u64::min(result, solve_interval(&puzzle.maps, i.0, i.1));
         }
         result
     }
