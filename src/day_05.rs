@@ -1,3 +1,4 @@
+#[derive(Default, Clone)]
 struct Range {
     dest_start: u64,
     source_start: u64,
@@ -13,7 +14,7 @@ impl Range {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct Map {
     ranges: Vec<Range>,
 }
@@ -120,6 +121,7 @@ pub mod part1 {
 
 pub mod part2 {
     use super::*;
+    use std::sync::{Arc, Mutex};
 
     fn solve_interval(mappings: &Vec<Map>, start: u64, len: u64) -> u64 {
         let mut result = u64::MAX;
@@ -133,6 +135,36 @@ pub mod part2 {
         }
 
         result
+    }
+
+    fn solve_puzzle_parallel(puzzle: &Puzzle) -> u64 {
+        let results = Arc::new(Mutex::new(Vec::new()));
+
+        let inputs: Vec<(u64, u64)> = puzzle
+            .seeds
+            .chunks(2)
+            .map(|chunk| (chunk[0], chunk[1]))
+            .collect();
+
+        let threads: Vec<_> = inputs
+            .into_iter()
+            .map(|(start, len)| {
+                let mappings = puzzle.maps.clone();
+                let results = results.clone();
+
+                std::thread::spawn(move || {
+                    let result = solve_interval(&mappings, start, len);
+                    results.lock().unwrap().push(result);
+                })
+            })
+            .collect();
+
+        for t in threads {
+            t.join().unwrap();
+        }
+
+        let answer = results.lock().unwrap().iter().min().unwrap().clone();
+        answer
     }
 
     fn solve_puzzle(puzzle: &Puzzle) -> u64 {
@@ -153,6 +185,11 @@ pub mod part2 {
     pub fn solve(file_name: &str) -> u64 {
         let puzzle = Puzzle::from_file(file_name);
         solve_puzzle(&puzzle)
+    }
+
+    pub fn solve_parallel(file_name: &str) -> u64 {
+        let puzzle = Puzzle::from_file(file_name);
+        solve_puzzle_parallel(&puzzle)
     }
 
     #[cfg(test)]
@@ -298,6 +335,7 @@ pub mod part2 {
             });
 
             assert_eq!(46, solve_puzzle(&puzzle));
+            assert_eq!(46, solve_puzzle_parallel(&puzzle));
         }
     }
 }

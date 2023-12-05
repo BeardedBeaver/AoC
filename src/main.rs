@@ -10,7 +10,6 @@ fn main() {
     let input_root_path = env::var("AOC_2023_INPUT_PATH").unwrap();
 
     use std::time::Instant;
-    let now = Instant::now();
 
     let day_01_path = format!("{}/day_01.txt", input_root_path);
 
@@ -58,10 +57,17 @@ fn main() {
     println!("Day 05, part 1: {}", answer);
     assert_eq!(answer, 910845529);
 
+    let now = Instant::now();
     let answer = day_05::part2::solve(&day_05_path);
     println!("Day 05, part 2: {}", answer);
     assert_eq!(answer, 77435348);
-
     let elapsed = now.elapsed();
-    println!("Elapsed: {:.2?}", elapsed);
+    println!("Elapsed (seq): {:.2?}", elapsed);
+
+    let now = Instant::now();
+    let answer = day_05::part2::solve_parallel(&day_05_path);
+    println!("Day 05, part 2: {}", answer);
+    assert_eq!(answer, 77435348);
+    let elapsed = now.elapsed();
+    println!("Elapsed (par): {:.2?}", elapsed);
 }
