@@ -121,7 +121,7 @@ pub mod part1 {
 
 pub mod part2 {
     use super::*;
-    use std::sync::{Arc, Mutex};
+    use std::sync::Arc;
 
     fn solve_interval(mappings: &Vec<Map>, start: u64, len: u64) -> u64 {
         let mut result = u64::MAX;
@@ -137,44 +137,55 @@ pub mod part2 {
         result
     }
 
-    fn solve_puzzle_parallel(puzzle: &Puzzle) -> u64 {
-        let results = Arc::new(Mutex::new(Vec::new()));
+    fn split_ranges(ranges: &Vec<(u64, u64)>, range_size: u64) -> Vec<(u64, u64)> {
+        let mut result = Vec::new();
 
-        let inputs: Vec<(u64, u64)> = puzzle
-            .seeds
-            .chunks(2)
-            .map(|chunk| (chunk[0], chunk[1]))
-            .collect();
+        for &(start, length) in ranges.iter() {
+            let mut total_length = 0;
+            let mut current_start = start;
 
-        let threads: Vec<_> = inputs
-            .into_iter()
-            .map(|(start, len)| {
-                let mappings = puzzle.maps.clone();
-                let results = results.clone();
-
-                std::thread::spawn(move || {
-                    let result = solve_interval(&mappings, start, len);
-                    results.lock().unwrap().push(result);
-                })
-            })
-            .collect();
-
-        for t in threads {
-            t.join().unwrap();
+            while total_length < length {
+                let split_length = std::cmp::min(length - total_length, range_size);
+                result.push((current_start, split_length));
+                current_start += split_length + 1;
+                total_length += split_length + 1;
+            }
         }
 
-        let answer = results.lock().unwrap().iter().min().unwrap().clone();
-        answer
+        result
+    }
+
+    fn solve_puzzle_parallel(puzzle: &Puzzle) -> u64 {
+        let inputs: Vec<(u64, u64)> = puzzle.seeds.chunks(2).map(|chunk| (chunk[0], chunk[1])).collect();
+        let chunks = split_ranges(&inputs, 25_000_000);
+
+        let n_workers = std::thread::available_parallelism().unwrap().get();
+        println!("Will use {n_workers} threads");
+        let pool = threadpool::ThreadPool::new(n_workers);
+        let (tx, rx) = std::sync::mpsc::channel::<u64>();
+
+        let mappings = Arc::new(puzzle.maps.clone());
+
+        for c in chunks {
+            let tx = tx.clone();
+            let m = Arc::clone(&mappings);
+
+            pool.execute(move || {
+                let result = solve_interval(&m, c.0, c.1);
+                tx.send(result).unwrap();
+            });
+        }
+        pool.join();
+        drop(tx);
+
+        let result = rx.iter().min().unwrap();
+        result
     }
 
     fn solve_puzzle(puzzle: &Puzzle) -> u64 {
         let mut result = u64::MAX;
 
-        let inputs: Vec<(u64, u64)> = puzzle
-            .seeds
-            .chunks(2)
-            .map(|chunk| (chunk[0], chunk[1]))
-            .collect();
+        let inputs: Vec<(u64, u64)> = puzzle.seeds.chunks(2).map(|chunk| (chunk[0], chunk[1])).collect();
 
         for i in inputs {
             result = u64::min(result, solve_interval(&puzzle.maps, i.0, i.1));
@@ -195,6 +206,25 @@ pub mod part2 {
     #[cfg(test)]
     mod tests {
         use super::*;
+
+        #[test]
+        fn split_ranges_test() {
+            {
+                let input = vec![(1000, 499)];
+                let ranges = split_ranges(&input, 99);
+
+                assert_eq!(vec![(1000, 99), (1100, 99), (1200, 99), (1300, 99), (1400, 99)], ranges);
+            }
+            {
+                let input = vec![(1000, 550)];
+                let ranges = split_ranges(&input, 99);
+
+                assert_eq!(
+                    vec![(1000, 99), (1100, 99), (1200, 99), (1300, 99), (1400, 99), (1500, 50)],
+                    ranges
+                );
+            }
+        }
 
         #[test]
         fn example_test() {
