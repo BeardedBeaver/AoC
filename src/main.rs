@@ -120,8 +120,8 @@ fn main() {
             println!("Day 07, part 1: {}", answer);
             // assert_eq!(answer, 250474325);
 
-            // let answer = day_06::part2::solve(&f);
-            // println!("Day 06, part 2: {}", answer);
+            let answer = day_07::part2::solve(&f);
+            println!("Day 07, part 2: {}", answer);
             // assert_eq!(answer, 34454850);
         }
     }
