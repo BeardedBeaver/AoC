@@ -151,26 +151,26 @@ mod tests {
     }
 }
 
+fn solve_hands(hands: &Vec<Hand>) -> u64 {
+    let mut result: u64 = 0;
+    for (i, hand) in hands.iter().enumerate() {
+        result += hand.bid * (i as u64 + 1);
+        println!("{:?}, {}", hand, result);
+    }
+
+    result
+}
+
 pub mod part1 {
     use super::*;
-
-    fn solve_hands(mut hands: Vec<Hand>) -> u64 {
-        hands.sort_unstable();
-
-        let mut result: u64 = 0;
-        for (i, hand) in hands.iter().enumerate() {
-            result += hand.bid * (i as u64 + 1);
-        }
-
-        result
-    }
 
     pub fn solve(file_name: &str) -> u64 {
         let mut hands = Vec::new();
         for line in std::fs::read_to_string(file_name).unwrap().lines() {
             hands.push(Hand::from_string(line));
         }
-        solve_hands(hands)
+        hands.sort_unstable();
+        solve_hands(&hands)
     }
 
     #[cfg(test)]
@@ -179,14 +179,15 @@ pub mod part1 {
 
         #[test]
         fn solve_test() {
+            // this is already sorted because solve_hands accepts a sorted vector
             let hands = vec![
-                Hand::from_string("QQQJA 483"),
                 Hand::from_string("32T3K 765"),
-                Hand::from_string("T55J5 684"),
-                Hand::from_string("KK677 28"),
                 Hand::from_string("KTJJT 220"),
+                Hand::from_string("KK677 28"),
+                Hand::from_string("T55J5 684"),
+                Hand::from_string("QQQJA 483"),
             ];
-            assert_eq!(6440, solve_hands(hands));
+            assert_eq!(6440, solve_hands(&hands));
         }
     }
 }
