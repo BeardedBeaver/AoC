@@ -118,7 +118,7 @@ fn main() {
         for f in file_names.iter() {
             let answer = day_07::part1::solve(&f);
             println!("Day 07, part 1: {}", answer);
-            // assert_eq!(answer, 220320);
+            // assert_eq!(answer, 250474325);
 
             // let answer = day_06::part2::solve(&f);
             // println!("Day 06, part 2: {}", answer);

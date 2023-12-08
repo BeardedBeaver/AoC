@@ -46,52 +46,6 @@ fn freqs_to_tuple(freqs: &HashMap<char, u64>) -> (u64, u64) {
     (*frequencies.get(0).unwrap_or(&0), *frequencies.get(1).unwrap_or(&0))
 }
 
-fn get_card_score(card: char) -> u64 {
-    match card {
-        'A' => 13,
-        'K' => 12,
-        'Q' => 11,
-        'J' => 10,
-        'T' => 9,
-        '9' => 8,
-        '8' => 7,
-        '7' => 6,
-        '6' => 5,
-        '5' => 4,
-        '4' => 3,
-        '3' => 2,
-        '2' => 1,
-        _ => 0,
-    }
-}
-
-impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Hand) -> Option<std::cmp::Ordering> {
-        let result = self.strength().cmp(&other.strength());
-        Some(match result {
-            std::cmp::Ordering::Equal => {
-                for i in 0..5 {
-                    let lhs_score = get_card_score(self.cards.as_bytes()[i] as char);
-                    let rhs_score = get_card_score(other.cards.as_bytes()[i] as char);
-                    if lhs_score == rhs_score {
-                        continue;
-                    }
-                    let result = lhs_score.cmp(&rhs_score);
-                    return Some(result);
-                }
-                std::cmp::Ordering::Equal
-            }
-            _ => result,
-        })
-    }
-}
-
-impl Ord for Hand {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -141,21 +95,12 @@ mod tests {
             6
         );
     }
-
-    #[test]
-    fn hand_cmp_test() {
-        assert!(Hand::from_string("32T4K 765") < Hand::from_string("T55J5 684"));
-        assert!(Hand::from_string("32T3K 765") < Hand::from_string("T55J5 684"));
-        assert!(Hand::from_string("KK677 28") > Hand::from_string("KTJJT 220"));
-        assert!(Hand::from_string("KK677 28") < Hand::from_string("QQQJA 483"));
-    }
 }
 
 fn solve_hands(hands: &Vec<Hand>) -> u64 {
     let mut result: u64 = 0;
     for (i, hand) in hands.iter().enumerate() {
         result += hand.bid * (i as u64 + 1);
-        println!("{:?}, {}", hand, result);
     }
 
     result
@@ -164,18 +109,80 @@ fn solve_hands(hands: &Vec<Hand>) -> u64 {
 pub mod part1 {
     use super::*;
 
+    fn get_card_score(card: char) -> u64 {
+        match card {
+            'A' => 13,
+            'K' => 12,
+            'Q' => 11,
+            'J' => 10,
+            'T' => 9,
+            '9' => 8,
+            '8' => 7,
+            '7' => 6,
+            '6' => 5,
+            '5' => 4,
+            '4' => 3,
+            '3' => 2,
+            '2' => 1,
+            _ => 0,
+        }
+    }
+
+    fn cmp(lhs: &Hand, rhs: &Hand) -> std::cmp::Ordering {
+        let result = lhs.strength().cmp(&rhs.strength());
+        match result {
+            std::cmp::Ordering::Equal => {
+                for i in 0..5 {
+                    let lhs_score = get_card_score(lhs.cards.as_bytes()[i] as char);
+                    let rhs_score = get_card_score(rhs.cards.as_bytes()[i] as char);
+                    if lhs_score == rhs_score {
+                        continue;
+                    }
+                    let result = lhs_score.cmp(&rhs_score);
+                    return result;
+                }
+                std::cmp::Ordering::Equal
+            }
+            _ => result,
+        }
+    }
+
     pub fn solve(file_name: &str) -> u64 {
         let mut hands = Vec::new();
         for line in std::fs::read_to_string(file_name).unwrap().lines() {
             hands.push(Hand::from_string(line));
         }
-        hands.sort_unstable();
+        hands.sort_unstable_by(|lhs, rhs| cmp(&lhs, &rhs));
         solve_hands(&hands)
     }
 
     #[cfg(test)]
     mod tests {
         use super::*;
+
+        #[test]
+        fn hand_cmp_test() {
+            assert_eq!(
+                cmp(&Hand::from_string("32T4K 765"), &Hand::from_string("T55J5 684")),
+                std::cmp::Ordering::Less
+            );
+            assert_eq!(
+                cmp(&Hand::from_string("32T3K 765"), &Hand::from_string("T55J5 684")),
+                std::cmp::Ordering::Less
+            );
+            assert_eq!(
+                cmp(&Hand::from_string("KK677 28"), &Hand::from_string("KTJJT 220")),
+                std::cmp::Ordering::Greater
+            );
+            assert_eq!(
+                cmp(&Hand::from_string("KK677 28"), &Hand::from_string("QQQJA 483")),
+                std::cmp::Ordering::Less
+            );
+            assert_eq!(
+                cmp(&Hand::from_string("KK677 28"), &Hand::from_string("KK677 218")),
+                std::cmp::Ordering::Equal
+            );
+        }
 
         #[test]
         fn solve_test() {
