@@ -7,7 +7,7 @@ pub mod part1 {
         return first.to_digit(10).unwrap() as u64 * 10 + last.to_digit(10).unwrap() as u64;
     }
 
-    pub fn trebuchet(input_file_name: &str) -> u64 {
+    pub fn solve(input_file_name: &str) -> u64 {
         let mut result: u64 = 0;
         for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
             result += get_value_from_line(line);
@@ -29,9 +29,7 @@ pub mod part1 {
 }
 
 pub mod part2 {
-    static DIGITS: [&str; 9] = [
-        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-    ];
+    static DIGITS: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
     fn get_first_digit(line: &str) -> u64 {
         let mut current_line = line;
@@ -89,7 +87,7 @@ pub mod part2 {
         return get_first_digit(line) * 10 + get_last_digit(line);
     }
 
-    pub fn trebuchet(input_file_name: &str) -> u64 {
+    pub fn solve(input_file_name: &str) -> u64 {
         let mut result: u64 = 0;
         for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
             result += get_value_from_line(line);

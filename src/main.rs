@@ -11,92 +11,104 @@ fn day_matched(arg: i32, day: i32) -> bool {
     arg < 0 || arg == day
 }
 
-fn main() {
-    let input_root_path = env::var("AOC_2023_INPUT_PATH").unwrap();
+fn get_input_file_names(day: i32) -> Vec<String> {
+    let input_root_path = env::var("AOC_2023_INPUT_PATH").expect("AOC_2023_INPUT_PATH is not set");
+    let mask = format!("{input_root_path}/day_{day:0>2}*.txt");
+    let entities = glob::glob(&mask).expect("Failed to read glob pattern");
+    entities.map(|e| e.unwrap().display().to_string()).collect()
+}
 
+fn main() {
     let args: Vec<String> = env::args().collect();
     let day: i32 = if args.len() < 2 { -1 } else { args[1].parse().unwrap() };
 
     if day_matched(day, 1) {
-        let day_01_path = format!("{}/day_01.txt", input_root_path);
+        let file_names = get_input_file_names(1);
+        for f in file_names.iter() {
+            let answer = day_01::part1::solve(&f);
+            println!("Day 01, part 1: {}", answer);
+            assert_eq!(answer, 54953); // solved, regression check
 
-        let answer = day_01::part1::trebuchet(&day_01_path);
-        println!("Day 01, part 1: {}", answer);
-        assert_eq!(answer, 54953); // solved, regression check
-
-        let answer = day_01::part2::trebuchet(&day_01_path);
-        println!("Day 01, part 2: {}", answer);
-        assert_eq!(answer, 53868);
+            let answer = day_01::part2::solve(&f);
+            println!("Day 01, part 2: {}", answer);
+            assert_eq!(answer, 53868);
+        }
     }
 
     if day_matched(day, 2) {
-        let day_02_path = format!("{}/day_02.txt", input_root_path);
+        let file_names = get_input_file_names(2);
+        for f in file_names.iter() {
+            let answer = day_02::part1::solve(&f);
+            println!("Day 02, part 1: {}", answer);
+            assert_eq!(answer, 1931);
 
-        let answer = day_02::part1::solve(&day_02_path);
-        println!("Day 02, part 1: {}", answer);
-        assert_eq!(answer, 1931);
-
-        let answer = day_02::part2::solve(&day_02_path);
-        println!("Day 02, part 2: {}", answer);
-        assert_eq!(answer, 83105);
+            let answer = day_02::part2::solve(&f);
+            println!("Day 02, part 2: {}", answer);
+            assert_eq!(answer, 83105);
+        }
     }
 
     if day_matched(day, 3) {
-        let day_03_path = format!("{}/day_03.txt", input_root_path);
+        let file_names = get_input_file_names(3);
+        for f in file_names.iter() {
+            let answer = day_03::part1::solve(&f);
+            println!("Day 03, part 1: {}", answer);
+            assert_eq!(answer, 531561);
 
-        let answer = day_03::part1::solve(&day_03_path);
-        println!("Day 03, part 1: {}", answer);
-        assert_eq!(answer, 531561);
-
-        let answer = day_03::part2::solve(&day_03_path);
-        println!("Day 03, part 2: {}", answer);
-        assert_eq!(answer, 83279367);
+            let answer = day_03::part2::solve(&f);
+            println!("Day 03, part 2: {}", answer);
+            assert_eq!(answer, 83279367);
+        }
     }
 
     if day_matched(day, 4) {
-        let day_04_path = format!("{}/day_04.txt", input_root_path);
+        let file_names = get_input_file_names(4);
+        for f in file_names.iter() {
+            let answer = day_04::part1::solve(&f);
+            println!("Day 04, part 1: {}", answer);
+            assert_eq!(answer, 20407);
 
-        let answer = day_04::part1::solve(&day_04_path);
-        println!("Day 04, part 1: {}", answer);
-        assert_eq!(answer, 20407);
-
-        let answer = day_04::part2::solve(&day_04_path);
-        println!("Day 04, part 2: {}", answer);
-        assert_eq!(answer, 23806951);
+            let answer = day_04::part2::solve(&f);
+            println!("Day 04, part 2: {}", answer);
+            assert_eq!(answer, 23806951);
+        }
     }
 
     if day_matched(day, 5) {
-        let day_05_path = format!("{}/day_05.txt", input_root_path);
-        use std::time::Instant;
+        let file_names = get_input_file_names(5);
+        for f in file_names.iter() {
+            use std::time::Instant;
 
-        let answer = day_05::part1::solve(&day_05_path);
-        println!("Day 05, part 1: {}", answer);
-        assert_eq!(answer, 910845529);
+            let answer = day_05::part1::solve(&f);
+            println!("Day 05, part 1: {}", answer);
+            assert_eq!(answer, 910845529);
 
-        let now = Instant::now();
-        let answer = day_05::part2::solve(&day_05_path);
-        println!("Day 05, part 2: {}", answer);
-        assert_eq!(answer, 77435348);
-        let elapsed = now.elapsed();
-        println!("Elapsed (seq): {:.2?}", elapsed);
+            let now = Instant::now();
+            let answer = day_05::part2::solve(&f);
+            println!("Day 05, part 2: {}", answer);
+            assert_eq!(answer, 77435348);
+            let elapsed = now.elapsed();
+            println!("Elapsed (seq): {:.2?}", elapsed);
 
-        let now = Instant::now();
-        let answer = day_05::part2::solve_parallel(&day_05_path);
-        println!("Day 05, part 2: {}", answer);
-        assert_eq!(answer, 77435348);
-        let elapsed = now.elapsed();
-        println!("Elapsed (par): {:.2?}", elapsed);
+            let now = Instant::now();
+            let answer = day_05::part2::solve_parallel(&f);
+            println!("Day 05, part 2: {}", answer);
+            assert_eq!(answer, 77435348);
+            let elapsed = now.elapsed();
+            println!("Elapsed (par): {:.2?}", elapsed);
+        }
     }
 
     if day_matched(day, 6) {
-        let day_06_path = format!("{}/day_06.txt", input_root_path);
+        let file_names = get_input_file_names(6);
+        for f in file_names.iter() {
+            let answer = day_06::part1::solve(&f);
+            println!("Day 06, part 1: {}", answer);
+            assert_eq!(answer, 220320);
 
-        let answer = day_06::part1::solve(&day_06_path);
-        println!("Day 06, part 1: {}", answer);
-        assert_eq!(answer, 220320);
-
-        let answer = day_06::part2::solve(&day_06_path);
-        println!("Day 06, part 2: {}", answer);
-        assert_eq!(answer, 34454850);
+            let answer = day_06::part2::solve(&f);
+            println!("Day 06, part 2: {}", answer);
+            assert_eq!(answer, 34454850);
+        }
     }
 }
