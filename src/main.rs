@@ -15,6 +15,12 @@ fn day_matched(arg: i32, day: i32) -> bool {
 
 fn get_input_file_names(day: i32) -> Vec<String> {
     let input_root_path = env::var("AOC_2023_INPUT_PATH").expect("AOC_2023_INPUT_PATH is not set");
+    if !std::fs::metadata(&input_root_path)
+        .map(|metadata| metadata.is_dir())
+        .unwrap_or(false)
+    {
+        panic!("The specified directory does not exist: {}", input_root_path);
+    }
     let mask = format!("{input_root_path}/day_{day:0>2}*.txt");
     let entities = glob::glob(&mask).expect("Failed to read glob pattern");
     entities.map(|e| e.unwrap().display().to_string()).collect()
