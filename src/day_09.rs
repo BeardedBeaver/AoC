@@ -43,3 +43,37 @@ pub mod part1 {
         }
     }
 }
+
+pub mod part2 {
+    use super::*;
+
+    fn solve_line(line: &Vec<i64>) -> i64 {
+        if line.iter().all(|x| *x == 0) {
+            return 0;
+        }
+        let mut delta = Vec::new();
+        for i in 0..line.len() - 1 {
+            delta.push(line[i + 1] - line[i]);
+        }
+        return line.first().unwrap() - solve_line(&delta);
+    }
+
+    pub fn solve(file_name: &str) -> i64 {
+        let lines = parse_input_file(file_name);
+        let mut result = 0;
+        for line in lines.iter() {
+            result += solve_line(&line);
+        }
+        result
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        #[test]
+        fn solve_line_test() {
+            assert_eq!(0, solve_line(&vec![1, 3, 6, 10, 15, 21]));
+            assert_eq!(5, solve_line(&vec![10, 13, 16, 21, 30, 45]));
+        }
+    }
+}
