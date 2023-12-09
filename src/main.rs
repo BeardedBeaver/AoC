@@ -7,6 +7,7 @@ mod day_04;
 mod day_05;
 mod day_06;
 mod day_07;
+mod day_08;
 
 fn day_matched(arg: i32, day: i32) -> bool {
     arg < 0 || arg == day
@@ -123,6 +124,18 @@ fn main() {
             let answer = day_07::part2::solve(&f);
             println!("Day 07, part 2: {}", answer);
             // assert_eq!(answer, 34454850);
+        }
+    }
+
+    let cur_day = 8;
+    if day_matched(day, cur_day) {
+        let file_names = get_input_file_names(cur_day);
+        for f in file_names.iter() {
+            let answer = day_08::part1::solve(&f);
+            println!("Day {:0>2}, part 1: {}", cur_day, answer);
+
+            // let answer = day_08::part2::solve(&f);
+            // println!("Day {:0>2}, part 2: {}", cur_day, answer);
         }
     }
 }
