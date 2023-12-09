@@ -74,3 +74,64 @@ pub mod part1 {
     #[cfg(test)]
     mod tests {}
 }
+
+pub mod part2 {
+    use super::*;
+
+    fn gcd(a: u64, b: u64) -> u64 {
+        if b == 0 {
+            a
+        } else {
+            gcd(b, a % b)
+        }
+    }
+
+    fn lcm(numbers: &[u64]) -> u64 {
+        numbers.iter().fold(1, |acc, &x| acc * x / gcd(acc, x))
+    }
+
+    pub fn solve(file_name: &str) -> u64 {
+        let desert = load_desert_from_file(file_name);
+
+        let mut curr_nodes = Vec::new();
+        for (key, _) in desert.nodes.iter() {
+            if key.ends_with("A") {
+                curr_nodes.push(key);
+            }
+        }
+
+        let mut lengths = Vec::new();
+
+        // This approach is actually cheating. An actual path in an input graph
+        // consists of two parts - first path from A-node to Z-node, and a loop
+        // from the next node after Z-node back to the Z-node. The trick is that
+        // in all (apparantly) input graphs these two parts have equal length.
+        // So this code doesn't try to find a loop and solve an arbitrary version
+        // of the input graph, but rather makes the first run from A to Z and
+        // assumes this value is also a length of the loop.
+
+        for curr_node in curr_nodes.into_iter() {
+            let mut curr_node = curr_node.as_str();
+            let mut i = 0;
+            let mut result = 0;
+            loop {
+                result += 1;
+                let direction = desert.path.as_bytes()[i] as char;
+                match direction {
+                    'L' => curr_node = &desert.nodes.get(curr_node).unwrap()[0],
+                    'R' => curr_node = &desert.nodes.get(curr_node).unwrap()[1],
+                    _ => unreachable!(),
+                }
+                if curr_node.ends_with("Z") {
+                    lengths.push(result);
+                    break;
+                }
+                i = (i + 1) % desert.path.len();
+            }
+        }
+        lcm(&lengths)
+    }
+
+    #[cfg(test)]
+    mod tests {}
+}

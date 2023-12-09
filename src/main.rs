@@ -140,8 +140,8 @@ fn main() {
             let answer = day_08::part1::solve(&f);
             println!("Day {:0>2}, part 1: {}", cur_day, answer);
 
-            // let answer = day_08::part2::solve(&f);
-            // println!("Day {:0>2}, part 2: {}", cur_day, answer);
+            let answer = day_08::part2::solve(&f);
+            println!("Day {:0>2}, part 2: {}", cur_day, answer);
         }
     }
 }
