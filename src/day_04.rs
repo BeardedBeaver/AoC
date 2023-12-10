@@ -56,13 +56,24 @@ pub mod part1 {
         1 * u64::pow(2, wins as u32 - 1)
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        for line in std::fs::read_to_string(file_name).unwrap().lines() {
-            let card = Card::parse(line);
-            result += get_score(card.num_wins());
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut result: u64 = 0;
+            for line in std::fs::read_to_string(file_name).unwrap().lines() {
+                let card = Card::parse(line);
+                result += get_score(card.num_wins());
+            }
+            result.to_string()
         }
-        result
+
+        fn day() -> i32 {
+            4
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 
     #[cfg(test)]
@@ -100,13 +111,24 @@ pub mod part2 {
         pile.iter().sum()
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut cards: Vec<Card> = Vec::new();
-        for line in std::fs::read_to_string(file_name).unwrap().lines() {
-            let card = Card::parse(line);
-            cards.push(card);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut cards: Vec<Card> = Vec::new();
+            for line in std::fs::read_to_string(file_name).unwrap().lines() {
+                let card = Card::parse(line);
+                cards.push(card);
+            }
+            count_cards(&cards).to_string()
         }
-        count_cards(&cards)
+
+        fn day() -> i32 {
+            4
+        }
+
+        fn part() -> i32 {
+            2
+        }
     }
 
     #[cfg(test)]
@@ -125,30 +147,18 @@ pub mod part2 {
             // example case from the puzzle
             {
                 let mut cards = Vec::new();
-                cards.push(Card::parse(
-                    "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53",
-                ));
-                cards.push(Card::parse(
-                    "Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19",
-                ));
-                cards.push(Card::parse(
-                    "Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1",
-                ));
+                cards.push(Card::parse("Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53"));
+                cards.push(Card::parse("Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19"));
+                cards.push(Card::parse("Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1"));
 
                 assert_eq!(7, count_cards(&cards));
 
-                cards.push(Card::parse(
-                    "Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83",
-                ));
-                cards.push(Card::parse(
-                    "Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36",
-                ));
+                cards.push(Card::parse("Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83"));
+                cards.push(Card::parse("Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36"));
 
                 assert_eq!(29, count_cards(&cards));
 
-                cards.push(Card::parse(
-                    "Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11",
-                ));
+                cards.push(Card::parse("Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"));
 
                 assert_eq!(30, count_cards(&cards));
             }

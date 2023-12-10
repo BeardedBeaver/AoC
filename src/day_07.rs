@@ -147,13 +147,24 @@ pub mod part1 {
         }
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut hands = Vec::new();
-        for line in std::fs::read_to_string(file_name).unwrap().lines() {
-            hands.push(Hand::from_string(line));
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut hands = Vec::new();
+            for line in std::fs::read_to_string(file_name).unwrap().lines() {
+                hands.push(Hand::from_string(line));
+            }
+            hands.sort_unstable_by(|lhs, rhs| cmp(&lhs, &rhs));
+            solve_hands(&hands).to_string()
         }
-        hands.sort_unstable_by(|lhs, rhs| cmp(&lhs, &rhs));
-        solve_hands(&hands)
+
+        fn day() -> i32 {
+            7
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 
     #[cfg(test)]
@@ -303,13 +314,24 @@ pub mod part2 {
         unreachable!();
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut hands = Vec::new();
-        for line in std::fs::read_to_string(file_name).unwrap().lines() {
-            hands.push(Hand::from_string(line));
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut hands = Vec::new();
+            for line in std::fs::read_to_string(file_name).unwrap().lines() {
+                hands.push(Hand::from_string(line));
+            }
+            hands.sort_unstable_by(|lhs, rhs| cmp(&lhs, &rhs));
+            solve_hands(&hands).to_string()
         }
-        hands.sort_unstable_by(|lhs, rhs| cmp(&lhs, &rhs));
-        solve_hands(&hands)
+
+        fn day() -> i32 {
+            7
+        }
+
+        fn part() -> i32 {
+            2
+        }
     }
 
     #[cfg(test)]

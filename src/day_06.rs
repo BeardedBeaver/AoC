@@ -92,17 +92,28 @@ pub mod part1 {
         result
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let handle = std::fs::read_to_string(file_name).unwrap();
-        let lines: Vec<&str> = handle.lines().collect();
-        assert_eq!(2, lines.len());
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let handle = std::fs::read_to_string(file_name).unwrap();
+            let lines: Vec<&str> = handle.lines().collect();
+            assert_eq!(2, lines.len());
 
-        let time: Vec<&str> = lines[0].split(":").collect();
-        let dist: Vec<&str> = lines[1].split(":").collect();
-        assert_eq!(2, time.len());
-        assert_eq!(2, dist.len());
-        let races = parse_races(time[1].trim(), dist[1].trim());
-        solve_puzzle(&races)
+            let time: Vec<&str> = lines[0].split(":").collect();
+            let dist: Vec<&str> = lines[1].split(":").collect();
+            assert_eq!(2, time.len());
+            assert_eq!(2, dist.len());
+            let races = parse_races(time[1].trim(), dist[1].trim());
+            solve_puzzle(&races).to_string()
+        }
+
+        fn day() -> i32 {
+            6
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 
     #[cfg(test)]
@@ -125,16 +136,27 @@ pub mod part1 {
 pub mod part2 {
     use super::*;
 
-    pub fn solve(file_name: &str) -> u64 {
-        let handle = std::fs::read_to_string(file_name).unwrap();
-        let lines: Vec<&str> = handle.lines().collect();
-        assert_eq!(2, lines.len());
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let handle = std::fs::read_to_string(file_name).unwrap();
+            let lines: Vec<&str> = handle.lines().collect();
+            assert_eq!(2, lines.len());
 
-        let time: Vec<&str> = lines[0].split(":").collect();
-        let dist: Vec<&str> = lines[1].split(":").collect();
-        assert_eq!(2, time.len());
-        assert_eq!(2, dist.len());
-        let race = parse_single_race(time[1].trim(), dist[1].trim());
-        solve_race(&race)
+            let time: Vec<&str> = lines[0].split(":").collect();
+            let dist: Vec<&str> = lines[1].split(":").collect();
+            assert_eq!(2, time.len());
+            assert_eq!(2, dist.len());
+            let race = parse_single_race(time[1].trim(), dist[1].trim());
+            solve_race(&race).to_string()
+        }
+
+        fn day() -> i32 {
+            6
+        }
+
+        fn part() -> i32 {
+            2
+        }
     }
 }

@@ -50,33 +50,11 @@ fn main() {
     solve::<day_02::part1::Solver>(day);
     solve::<day_02::part2::Solver>(day);
 
-    let cur_day = 3;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_03::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-            assert_eq!(answer, 531561);
+    solve::<day_03::part1::Solver>(day);
+    solve::<day_03::part2::Solver>(day);
 
-            let answer = day_03::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            assert_eq!(answer, 83279367);
-        }
-    }
-
-    let cur_day = 4;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_04::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-            assert_eq!(answer, 20407);
-
-            let answer = day_04::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            assert_eq!(answer, 23806951);
-        }
-    }
+    solve::<day_04::part1::Solver>(day);
+    solve::<day_04::part2::Solver>(day);
 
     let cur_day = 5;
     if day_matched(day, cur_day) {
@@ -104,55 +82,15 @@ fn main() {
         }
     }
 
-    let cur_day = 6;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_06::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-            assert_eq!(answer, 220320);
+    solve::<day_06::part1::Solver>(day);
+    solve::<day_06::part2::Solver>(day);
 
-            let answer = day_06::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            assert_eq!(answer, 34454850);
-        }
-    }
+    solve::<day_07::part1::Solver>(day);
+    solve::<day_07::part2::Solver>(day);
 
-    let cur_day = 7;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_07::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-            // assert_eq!(answer, 250474325);
+    solve::<day_08::part1::Solver>(day);
+    solve::<day_08::part2::Solver>(day);
 
-            let answer = day_07::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            // assert_eq!(answer, 34454850);
-        }
-    }
-
-    let cur_day = 8;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_08::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-
-            let answer = day_08::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-        }
-    }
-
-    let cur_day = 9;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_09::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-
-            let answer = day_09::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-        }
-    }
+    solve::<day_09::part1::Solver>(day);
+    solve::<day_09::part2::Solver>(day);
 }

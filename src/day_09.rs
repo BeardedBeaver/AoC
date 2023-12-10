@@ -24,13 +24,24 @@ pub mod part1 {
         return line.last().unwrap() + solve_line(&delta);
     }
 
-    pub fn solve(file_name: &str) -> i64 {
-        let lines = parse_input_file(file_name);
-        let mut result = 0;
-        for line in lines.iter() {
-            result += solve_line(&line);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let lines = parse_input_file(file_name);
+            let mut result = 0;
+            for line in lines.iter() {
+                result += solve_line(&line);
+            }
+            result.to_string()
         }
-        result
+
+        fn day() -> i32 {
+            9
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 
     #[cfg(test)]
@@ -58,13 +69,24 @@ pub mod part2 {
         return line.first().unwrap() - solve_line(&delta);
     }
 
-    pub fn solve(file_name: &str) -> i64 {
-        let lines = parse_input_file(file_name);
-        let mut result = 0;
-        for line in lines.iter() {
-            result += solve_line(&line);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let lines = parse_input_file(file_name);
+            let mut result = 0;
+            for line in lines.iter() {
+                result += solve_line(&line);
+            }
+            result.to_string()
         }
-        result
+
+        fn day() -> i32 {
+            9
+        }
+
+        fn part() -> i32 {
+            2
+        }
     }
 
     #[cfg(test)]

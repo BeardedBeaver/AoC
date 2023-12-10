@@ -254,48 +254,70 @@ mod tests {
 pub mod part1 {
     use super::*;
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        let matrix = Matrix::read_from_file(file_name);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut result: u64 = 0;
+            let matrix = Matrix::read_from_file(file_name);
 
-        for i in 0..matrix.rows() {
-            for j in 0..matrix.cols() {
-                let c = matrix.get_value(i, j);
-                if c.is_digit(10) || c == '.' {
-                    continue;
-                }
-                let numbers = get_adjacent_numbers(&matrix, i, j);
-                for num in numbers {
-                    result += num;
+            for i in 0..matrix.rows() {
+                for j in 0..matrix.cols() {
+                    let c = matrix.get_value(i, j);
+                    if c.is_digit(10) || c == '.' {
+                        continue;
+                    }
+                    let numbers = get_adjacent_numbers(&matrix, i, j);
+                    for num in numbers {
+                        result += num;
+                    }
                 }
             }
+
+            result.to_string()
         }
 
-        result
+        fn day() -> i32 {
+            3
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 }
 
 pub mod part2 {
     use super::*;
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        let matrix = Matrix::read_from_file(file_name);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut result: u64 = 0;
+            let matrix = Matrix::read_from_file(file_name);
 
-        for i in 0..matrix.rows() {
-            for j in 0..matrix.cols() {
-                let c = matrix.get_value(i, j);
-                if c != '*' {
-                    continue;
+            for i in 0..matrix.rows() {
+                for j in 0..matrix.cols() {
+                    let c = matrix.get_value(i, j);
+                    if c != '*' {
+                        continue;
+                    }
+                    let numbers = get_adjacent_numbers(&matrix, i, j);
+                    if numbers.len() != 2 {
+                        continue;
+                    }
+                    result += numbers[0] * numbers[1];
                 }
-                let numbers = get_adjacent_numbers(&matrix, i, j);
-                if numbers.len() != 2 {
-                    continue;
-                }
-                result += numbers[0] * numbers[1];
             }
+
+            result.to_string()
         }
 
-        result
+        fn day() -> i32 {
+            3
+        }
+
+        fn part() -> i32 {
+            2
+        }
     }
 }
