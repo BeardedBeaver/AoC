@@ -83,17 +83,28 @@ pub mod part1 {
         return max_red <= 12 && max_green <= 13 && max_blue <= 14;
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        for line in std::fs::read_to_string(file_name).unwrap().lines() {
-            let words: Vec<&str> = line.split(":").collect();
-            assert_eq!(words.len(), 2);
-            let game_index = get_game_index(words[0]);
-            if is_good_game(words[1]) {
-                result += game_index;
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut result: u64 = 0;
+            for line in std::fs::read_to_string(file_name).unwrap().lines() {
+                let words: Vec<&str> = line.split(":").collect();
+                assert_eq!(words.len(), 2);
+                let game_index = get_game_index(words[0]);
+                if is_good_game(words[1]) {
+                    result += game_index;
+                }
             }
+            result.to_string()
         }
-        result
+
+        fn day() -> i32 {
+            2
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 }
 
@@ -114,13 +125,24 @@ pub mod part2 {
         return max_red as u64 * max_green as u64 * max_blue as u64;
     }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        for line in std::fs::read_to_string(file_name).unwrap().lines() {
-            let words: Vec<&str> = line.split(":").collect();
-            assert_eq!(words.len(), 2);
-            result += get_powers(words[1]);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut result: u64 = 0;
+            for line in std::fs::read_to_string(file_name).unwrap().lines() {
+                let words: Vec<&str> = line.split(":").collect();
+                assert_eq!(words.len(), 2);
+                result += get_powers(words[1]);
+            }
+            result.to_string()
         }
-        result
+
+        fn day() -> i32 {
+            2
+        }
+
+        fn part() -> i32 {
+            2
+        }
     }
 }

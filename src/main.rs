@@ -29,14 +29,14 @@ fn get_input_file_names(day: i32) -> Vec<String> {
     entities.map(|e| e.unwrap().display().to_string()).collect()
 }
 
-fn solve<Solver: crate::aoc::Solver>(day: i32, solver_day: i32) {
-    if !day_matched(day, solver_day) {
+fn solve<Solver: crate::aoc::Solver>(day: i32) {
+    if !day_matched(day, Solver::day()) {
         return;
     }
-    let file_names = get_input_file_names(solver_day);
+    let file_names = get_input_file_names(Solver::day());
     for f in file_names.iter() {
         let answer = Solver::solve(&f);
-        println!("Day {:0>2}, part {}: {}", solver_day, Solver::part(), answer);
+        println!("Day {:0>2}, part {}: {}", Solver::day(), Solver::part(), answer);
     }
 }
 
@@ -44,22 +44,11 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let day: i32 = if args.len() < 2 { -1 } else { args[1].parse().unwrap() };
 
-    solve::<day_01::part1::Solver>(day, 1);
-    solve::<day_01::part2::Solver>(day, 1);
+    solve::<day_01::part1::Solver>(day);
+    solve::<day_01::part2::Solver>(day);
 
-    let cur_day = 2;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            let answer = day_02::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-            assert_eq!(answer, 1931);
-
-            let answer = day_02::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            assert_eq!(answer, 83105);
-        }
-    }
+    solve::<day_02::part1::Solver>(day);
+    solve::<day_02::part2::Solver>(day);
 
     let cur_day = 3;
     if day_matched(day, cur_day) {

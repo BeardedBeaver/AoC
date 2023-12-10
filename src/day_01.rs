@@ -17,6 +17,10 @@ pub mod part1 {
             result.to_string()
         }
 
+        fn day() -> i32 {
+            1
+        }
+
         fn part() -> i32 {
             1
         }
@@ -104,8 +108,12 @@ pub mod part2 {
             result.to_string()
         }
 
-        fn part() -> i32 {
+        fn day() -> i32 {
             1
+        }
+
+        fn part() -> i32 {
+            2
         }
     }
 
