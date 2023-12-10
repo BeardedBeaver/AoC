@@ -35,8 +35,19 @@ fn solve<Solver: crate::aoc::Solver>(day: i32) {
     }
     let file_names = get_input_file_names(Solver::day());
     for f in file_names.iter() {
+        use std::time::Instant;
+
+        let now = Instant::now();
         let answer = Solver::solve(&f);
-        println!("Day {:0>2}, part {}: {}", Solver::day(), Solver::part(), answer);
+        let elapsed = now.elapsed();
+
+        println!(
+            "Day {:0>2}, part {}: {}\n\tElapsed: {:.2?}\n",
+            Solver::day(),
+            Solver::part(),
+            answer,
+            elapsed
+        );
     }
 }
 
@@ -56,31 +67,8 @@ fn main() {
     solve::<day_04::part1::Solver>(day);
     solve::<day_04::part2::Solver>(day);
 
-    let cur_day = 5;
-    if day_matched(day, cur_day) {
-        let file_names = get_input_file_names(cur_day);
-        for f in file_names.iter() {
-            use std::time::Instant;
-
-            let answer = day_05::part1::solve(&f);
-            println!("Day {:0>2}, part 1: {}", cur_day, answer);
-            assert_eq!(answer, 910845529);
-
-            let now = Instant::now();
-            let answer = day_05::part2::solve(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            assert_eq!(answer, 77435348);
-            let elapsed = now.elapsed();
-            println!("Elapsed (seq): {:.2?}", elapsed);
-
-            let now = Instant::now();
-            let answer = day_05::part2::solve_parallel(&f);
-            println!("Day {:0>2}, part 2: {}", cur_day, answer);
-            assert_eq!(answer, 77435348);
-            let elapsed = now.elapsed();
-            println!("Elapsed (par): {:.2?}", elapsed);
-        }
-    }
+    solve::<day_05::part1::Solver>(day);
+    solve::<day_05::part2::Solver>(day);
 
     solve::<day_06::part1::Solver>(day);
     solve::<day_06::part2::Solver>(day);

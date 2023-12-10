@@ -99,23 +99,34 @@ mod tests {
 pub mod part1 {
     use super::*;
 
-    pub fn solve(file_name: &str) -> u64 {
-        let mut result: Option<u64> = None;
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut result: Option<u64> = None;
 
-        let puzzle = Puzzle::from_file(file_name);
+            let puzzle = Puzzle::from_file(file_name);
 
-        for seed in puzzle.seeds {
-            let mut seed = seed;
-            for map in puzzle.maps.iter() {
-                seed = map.transform(seed);
+            for seed in puzzle.seeds {
+                let mut seed = seed;
+                for map in puzzle.maps.iter() {
+                    seed = map.transform(seed);
+                }
+                match result {
+                    None => result = Some(seed),
+                    Some(value) => result = Some(u64::min(value, seed)),
+                }
             }
-            match result {
-                None => result = Some(seed),
-                Some(value) => result = Some(u64::min(value, seed)),
-            }
+
+            result.unwrap().to_string()
         }
 
-        result.unwrap()
+        fn day() -> i32 {
+            5
+        }
+
+        fn part() -> i32 {
+            1
+        }
     }
 }
 
@@ -160,7 +171,6 @@ pub mod part2 {
         let chunks = split_ranges(&inputs, 25_000_000);
 
         let n_workers = std::thread::available_parallelism().unwrap().get();
-        println!("Will use {n_workers} threads");
         let pool = threadpool::ThreadPool::new(n_workers);
         let (tx, rx) = std::sync::mpsc::channel::<u64>();
 
@@ -182,25 +192,20 @@ pub mod part2 {
         result
     }
 
-    fn solve_puzzle(puzzle: &Puzzle) -> u64 {
-        let mut result = u64::MAX;
-
-        let inputs: Vec<(u64, u64)> = puzzle.seeds.chunks(2).map(|chunk| (chunk[0], chunk[1])).collect();
-
-        for i in inputs {
-            result = u64::min(result, solve_interval(&puzzle.maps, i.0, i.1));
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let puzzle = Puzzle::from_file(file_name);
+            solve_puzzle_parallel(&puzzle).to_string()
         }
-        result
-    }
 
-    pub fn solve(file_name: &str) -> u64 {
-        let puzzle = Puzzle::from_file(file_name);
-        solve_puzzle(&puzzle)
-    }
+        fn day() -> i32 {
+            5
+        }
 
-    pub fn solve_parallel(file_name: &str) -> u64 {
-        let puzzle = Puzzle::from_file(file_name);
-        solve_puzzle_parallel(&puzzle)
+        fn part() -> i32 {
+            2
+        }
     }
 
     #[cfg(test)]
@@ -364,7 +369,6 @@ pub mod part2 {
                 ],
             });
 
-            assert_eq!(46, solve_puzzle(&puzzle));
             assert_eq!(46, solve_puzzle_parallel(&puzzle));
         }
     }
