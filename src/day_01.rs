@@ -7,12 +7,19 @@ pub mod part1 {
         return first.to_digit(10).unwrap() as u64 * 10 + last.to_digit(10).unwrap() as u64;
     }
 
-    pub fn solve(input_file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
-            result += get_value_from_line(line);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(input_file_name: &str) -> String {
+            let mut result: u64 = 0;
+            for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
+                result += get_value_from_line(line);
+            }
+            result.to_string()
         }
-        result
+
+        fn part() -> i32 {
+            1
+        }
     }
 
     #[cfg(test)]
@@ -87,12 +94,19 @@ pub mod part2 {
         return get_first_digit(line) * 10 + get_last_digit(line);
     }
 
-    pub fn solve(input_file_name: &str) -> u64 {
-        let mut result: u64 = 0;
-        for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
-            result += get_value_from_line(line);
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(input_file_name: &str) -> String {
+            let mut result: u64 = 0;
+            for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
+                result += get_value_from_line(line);
+            }
+            result.to_string()
         }
-        result
+
+        fn part() -> i32 {
+            1
+        }
     }
 
     #[cfg(test)]
