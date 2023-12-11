@@ -11,6 +11,7 @@ mod day_06;
 mod day_07;
 mod day_08;
 mod day_09;
+mod day_10;
 
 fn day_matched(arg: i32, day: i32) -> bool {
     arg < 0 || arg == day
@@ -81,4 +82,6 @@ fn main() {
 
     solve::<day_09::part1::Solver>(day);
     solve::<day_09::part2::Solver>(day);
+
+    solve::<day_10::part1::Solver>(day);
 }
