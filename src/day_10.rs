@@ -151,6 +151,7 @@ impl Map {
         }
     }
 
+    #[allow(dead_code)] // used in tests
     fn assign(self: &mut Map, row: usize, col: usize, c: char) {
         self.nodes[row].replace_range(col..col + 1, &c.to_string());
     }
@@ -260,15 +261,22 @@ pub mod part2 {
         s.len() % 2 == 1
     }
 
+    // Here we go over a  points, skip ones that are the loop itself, and for each point
+    // count how many "edges" of the loop we cross going from this node to the right.
+    // The trick is to correctly handle going by the edge (see is_inside function for this).
+    // Note that we need to count no only blank points, but pipes that are not the part
+    // of the main loop as well.
     fn solve(map: &Map) -> u64 {
         assert!(!map.nodes.is_empty());
         let visited = traverse(map);
         let mut result = 0;
         let accepted_pipes = vec!['|', 'L', 'J', '7', 'F', 'S'];
         for (row, line) in map.nodes.iter().enumerate() {
-            for (col, pipe) in line.as_bytes().iter().enumerate() {
-                let pipe = *pipe as char;
-                if pipe != '.' {
+            for (col, _) in line.as_bytes().iter().enumerate() {
+                if visited.contains(&Point {
+                    row: row as u64,
+                    col: col as u64,
+                }) {
                     continue;
                 }
                 let mut intersections = Vec::new();
