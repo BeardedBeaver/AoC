@@ -132,6 +132,28 @@ impl Map {
         assert_eq!(2, result.len());
         (result[0], result[1])
     }
+
+    fn get_start_pipe(self: &Map) -> char {
+        let (p1, p2) = self.get_possible_paths_from_start();
+        let r1 = p1.row as i64 - self.start.row as i64;
+        let c1 = p1.col as i64 - self.start.col as i64;
+        let r2 = p2.row as i64 - self.start.row as i64;
+        let c2 = p2.col as i64 - self.start.col as i64;
+
+        match (r1, c1, r2, c2) {
+            (0, -1, 0, 1) => '-',
+            (-1, 0, 1, 0) => '|',
+            (1, 0, 0, 1) => 'F',
+            (0, -1, 1, 0) => '7',
+            (0, -1, -1, 0) => 'J',
+            (-1, 0, 0, 1) => 'L',
+            _ => unreachable!(),
+        }
+    }
+
+    fn assign(self: &mut Map, row: usize, col: usize, c: char) {
+        self.nodes[row].replace_range(col..col + 1, &c.to_string());
+    }
 }
 
 #[cfg(test)]
@@ -222,5 +244,141 @@ pub mod part1 {
         map.start = Point { row: 2, col: 0 };
 
         assert_eq!(8, solve(&map));
+    }
+}
+
+pub mod part2 {
+    use super::*;
+
+    fn is_inside(intersections: &Vec<char>) -> bool {
+        let mut s: String = intersections.into_iter().collect();
+        s = s.replace("LJ", "");
+        s = s.replace("F7", "");
+
+        s = s.replace("L7", "|");
+        s = s.replace("FJ", "|");
+        s.len() % 2 == 1
+    }
+
+    fn solve(map: &Map) -> u64 {
+        assert!(!map.nodes.is_empty());
+        let visited = traverse(map);
+        let mut result = 0;
+        let accepted_pipes = vec!['|', 'L', 'J', '7', 'F', 'S'];
+        for (row, line) in map.nodes.iter().enumerate() {
+            for (col, pipe) in line.as_bytes().iter().enumerate() {
+                let pipe = *pipe as char;
+                if pipe != '.' {
+                    continue;
+                }
+                let mut intersections = Vec::new();
+                for c in col..line.len() {
+                    let mut value = line.as_bytes()[c] as char;
+                    if visited.contains(&Point {
+                        row: row as u64,
+                        col: c as u64,
+                    }) && accepted_pipes.contains(&value)
+                    {
+                        if value == 'S' {
+                            value = map.get_start_pipe();
+                        }
+                        intersections.push(value);
+                    }
+                }
+                if is_inside(&intersections) {
+                    result += 1;
+                }
+            }
+        }
+        result
+    }
+
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let map = Map::from_file(file_name);
+            solve(&map).to_string()
+        }
+
+        fn day() -> i32 {
+            10
+        }
+
+        fn part() -> i32 {
+            2
+        }
+    }
+
+    #[test]
+    fn solve_test() {
+        let mut map = Map::default();
+        map.nodes.push("...........".to_owned());
+        map.nodes.push(".S-------7.".to_owned());
+        map.nodes.push(".|F-----7|.".to_owned());
+        map.nodes.push(".||.....||.".to_owned());
+        map.nodes.push(".||.....||.".to_owned());
+        map.nodes.push(".|L-7.F-J|.".to_owned());
+        map.nodes.push(".|..|.|..|.".to_owned());
+        map.nodes.push(".L--J.L--J.".to_owned());
+        map.nodes.push("...........".to_owned());
+        map.start = Point { row: 1, col: 1 };
+
+        assert_eq!(4, solve(&map));
+
+        let mut map = Map::default();
+        map.nodes.push(".F----7F7F7F7F-7....".to_owned());
+        map.nodes.push(".|F--7||||||||FJ....".to_owned());
+        map.nodes.push(".||.FJ||||||||L7....".to_owned());
+        map.nodes.push("FJL7L7LJLJ||LJ.L-7..".to_owned());
+        map.nodes.push("L--J.L7...LJS7F-7L7.".to_owned());
+        map.nodes.push("....F-J..F7FJ|L7L7L7".to_owned());
+        map.nodes.push("....L7.F7||L7|.L7L7|".to_owned());
+        map.nodes.push(".....|FJLJ|FJ|F7|.LJ".to_owned());
+        map.nodes.push("....FJL-7.||.||||...".to_owned());
+        map.nodes.push("....L---J.LJ.LJLJ...".to_owned());
+        map.start = Point { row: 4, col: 12 };
+
+        assert_eq!(
+            map.nodes[map.start.row as usize].as_bytes()[map.start.col as usize],
+            'S' as u8
+        );
+
+        assert_eq!(8, solve(&map));
+    }
+
+    #[test]
+    fn is_inside_test() {
+        assert_eq!(true, is_inside(&vec!['|']));
+        assert_eq!(false, is_inside(&vec!['|', '|']));
+        assert_eq!(false, is_inside(&vec!['F', '7', '|', '|']));
+        assert_eq!(false, is_inside(&vec!['F', 'J', '|']));
+    }
+
+    #[test]
+    fn get_start_pipe_test() {
+        use crate::day_10::Point;
+        let mut map = Map::default();
+
+        let original_map = vec![
+            ".....".to_owned(),
+            ".F-7.".to_owned(),
+            ".|.|.".to_owned(),
+            ".L-J.".to_owned(),
+            ".....".to_owned(),
+        ];
+
+        for (row, line) in original_map.iter().enumerate() {
+            for (col, tile) in line.chars().enumerate() {
+                if tile != '.' {
+                    map.nodes = original_map.clone();
+                    map.start = Point {
+                        row: row as u64,
+                        col: col as u64,
+                    };
+                    map.assign(row, col, 'S');
+                    assert_eq!(tile, map.get_start_pipe());
+                }
+            }
+        }
     }
 }
