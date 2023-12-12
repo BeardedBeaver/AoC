@@ -88,10 +88,40 @@ mod tests {
 }
 
 pub mod part1 {
+    use super::*;
+
+    fn index(universe: &Universe) -> Vec<(i64, i64)> {
+        let mut result = Vec::new();
+        for (row, line) in universe.galaxies.iter().enumerate() {
+            for (col, c) in line.as_bytes().iter().enumerate() {
+                if *c as char == '#' {
+                    result.push((row as i64, col as i64));
+                }
+            }
+        }
+        result
+    }
+
+    fn solve(universe: &Universe) -> i64 {
+        let galaxies = index(&universe);
+        let mut answer = 0;
+        for i in 0..galaxies.len() {
+            for j in i + 1..galaxies.len() {
+                let lhs = galaxies[i];
+                let rhs = galaxies[j];
+                let dist = (lhs.0 - rhs.0).abs() + (lhs.1 - rhs.1).abs();
+                answer += dist;
+            }
+        }
+        answer
+    }
+
     pub struct Solver {}
     impl crate::aoc::Solver for Solver {
         fn solve(file_name: &str) -> String {
-            "42".to_string()
+            let mut universe = Universe::from_file(file_name);
+            universe.expand();
+            solve(&universe).to_string()
         }
 
         fn day() -> i32 {
@@ -100,6 +130,30 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn solve_test() {
+            let mut galaxies = Vec::new();
+            galaxies.push("...#......".to_owned());
+            galaxies.push(".......#..".to_owned());
+            galaxies.push("#.........".to_owned());
+            galaxies.push("..........".to_owned());
+            galaxies.push("......#...".to_owned());
+            galaxies.push(".#........".to_owned());
+            galaxies.push(".........#".to_owned());
+            galaxies.push("..........".to_owned());
+            galaxies.push(".......#..".to_owned());
+            galaxies.push("#...#.....".to_owned());
+            let mut universe = Universe { galaxies };
+            universe.expand();
+
+            assert_eq!(374, solve(&universe));
         }
     }
 }
