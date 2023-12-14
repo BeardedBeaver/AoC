@@ -18,6 +18,7 @@ pub mod part1 {
             return 0;
         }
         let mut delta = Vec::new();
+        // TODO rework using array_windows
         for i in 0..line.len() - 1 {
             delta.push(line[i + 1] - line[i]);
         }
