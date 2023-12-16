@@ -22,6 +22,9 @@ fn get_broken_springs(springs: &Vec<char>) -> Vec<i32> {
     let mut result = Vec::new();
     let mut current_damaged_count = 0;
     for c in springs.iter() {
+        if *c == '?' {
+            break;
+        }
         if *c == '.' && current_damaged_count > 0 {
             result.push(current_damaged_count);
             current_damaged_count = 0;
@@ -35,7 +38,30 @@ fn get_broken_springs(springs: &Vec<char>) -> Vec<i32> {
     result
 }
 
-fn generate_all_possible_springs(pattern: &Vec<char>) -> LinkedList<Vec<char>> {
+fn is_possible(pattern: &Vec<char>, broken: &Vec<i32>) -> bool {
+    let current_broken = get_broken_springs(&pattern);
+
+    if current_broken.len() < 2 {
+        return true;
+    }
+
+    if current_broken.len() > broken.len() {
+        return false;
+    }
+
+    for i in 0..current_broken.len() - 1 {
+        if i >= broken.len() {
+            return false;
+        }
+        if current_broken[i] > broken[i] {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+fn generate_filtered_possible_springs(pattern: &Vec<char>, broken: &Vec<i32>) -> LinkedList<Vec<char>> {
     let mut result = LinkedList::new();
     result.push_back(pattern.to_owned());
     while result.front().unwrap().iter().any(|c| *c == '?') {
@@ -48,14 +74,18 @@ fn generate_all_possible_springs(pattern: &Vec<char>) -> LinkedList<Vec<char>> {
         let mut rhs = current.clone();
         rhs[index] = '#';
 
-        result.push_back(lhs);
-        result.push_back(rhs);
+        if is_possible(&lhs, &broken) {
+            result.push_back(lhs);
+        }
+        if is_possible(&rhs, &broken) {
+            result.push_back(rhs);
+        }
     }
     result
 }
 
 fn generate_possible_springs(pattern: &Vec<char>, damaged: &Vec<i32>) -> Vec<Vec<char>> {
-    generate_all_possible_springs(&pattern)
+    generate_filtered_possible_springs(&pattern, &damaged)
         .iter()
         .filter(|config| {
             let pattern = get_broken_springs(config);
@@ -71,17 +101,6 @@ mod tests {
 
     fn str_to_chars(s: &str) -> Vec<char> {
         s.as_bytes().iter().map(|c| *c as char).collect()
-    }
-
-    #[test]
-    fn generate_all_possible_springs_test() {
-        let pattern: Vec<char> = str_to_chars("??...#...#...");
-        let springs = generate_all_possible_springs(&pattern);
-        assert_eq!(4, springs.len());
-        assert!(springs.contains(&str_to_chars(".....#...#...")));
-        assert!(springs.contains(&str_to_chars("#....#...#...")));
-        assert!(springs.contains(&str_to_chars(".#...#...#...")));
-        assert!(springs.contains(&str_to_chars("##...#...#...")));
     }
 
     #[test]
@@ -177,7 +196,7 @@ pub mod part2 {
 
         let factor = f2 / f1;
         println!("{f1}, {f2}, {factor}");
-        (f2 * factor * factor * factor) as u64
+        return (f2 * factor * factor * factor) as u64;
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
