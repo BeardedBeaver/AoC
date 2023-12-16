@@ -18,7 +18,7 @@ impl Springs {
     }
 }
 
-fn get_broken_springs(springs: &Vec<char>) -> Vec<i32> {
+fn get_damaged_springs(springs: &Vec<char>) -> Vec<i32> {
     let mut result = Vec::new();
     let mut current_damaged_count = 0;
     for c in springs.iter() {
@@ -38,22 +38,22 @@ fn get_broken_springs(springs: &Vec<char>) -> Vec<i32> {
     result
 }
 
-fn is_possible(pattern: &Vec<char>, broken: &Vec<i32>) -> bool {
-    let current_broken = get_broken_springs(&pattern);
+fn is_possible(pattern: &Vec<char>, damaged: &Vec<i32>) -> bool {
+    let current_damaged = get_damaged_springs(&pattern);
 
-    if current_broken.len() < 2 {
+    if current_damaged.len() < 2 {
         return true;
     }
 
-    if current_broken.len() > broken.len() {
+    if current_damaged.len() > damaged.len() {
         return false;
     }
 
-    for i in 0..current_broken.len() - 1 {
-        if i >= broken.len() {
+    for i in 0..current_damaged.len() - 1 {
+        if i >= damaged.len() {
             return false;
         }
-        if current_broken[i] > broken[i] {
+        if current_damaged[i] > damaged[i] {
             return false;
         }
     }
@@ -61,7 +61,7 @@ fn is_possible(pattern: &Vec<char>, broken: &Vec<i32>) -> bool {
     return true;
 }
 
-fn generate_filtered_possible_springs(pattern: &Vec<char>, broken: &Vec<i32>) -> LinkedList<Vec<char>> {
+fn generate_filtered_possible_springs(pattern: &Vec<char>, damaged: &Vec<i32>) -> LinkedList<Vec<char>> {
     let mut result = LinkedList::new();
     result.push_back(pattern.to_owned());
     while result.front().unwrap().iter().any(|c| *c == '?') {
@@ -74,10 +74,10 @@ fn generate_filtered_possible_springs(pattern: &Vec<char>, broken: &Vec<i32>) ->
         let mut rhs = current.clone();
         rhs[index] = '#';
 
-        if is_possible(&lhs, &broken) {
+        if is_possible(&lhs, &damaged) {
             result.push_back(lhs);
         }
-        if is_possible(&rhs, &broken) {
+        if is_possible(&rhs, &damaged) {
             result.push_back(rhs);
         }
     }
@@ -88,7 +88,7 @@ fn generate_possible_springs(pattern: &Vec<char>, damaged: &Vec<i32>) -> Vec<Vec
     generate_filtered_possible_springs(&pattern, &damaged)
         .iter()
         .filter(|config| {
-            let pattern = get_broken_springs(config);
+            let pattern = get_damaged_springs(config);
             pattern == *damaged
         })
         .map(|config| config.clone())
@@ -104,12 +104,12 @@ mod tests {
     }
 
     #[test]
-    fn get_broken_springs_test() {
-        assert_eq!(vec![3], get_broken_springs(&str_to_chars("...###")));
-        assert_eq!(vec![1, 1, 3], get_broken_springs(&str_to_chars("#.#.###")));
-        assert_eq!(vec![1, 3, 1, 6], get_broken_springs(&str_to_chars(".#.###.#.######")));
-        assert_eq!(vec![4, 1, 1], get_broken_springs(&str_to_chars("####.#...#...")));
-        assert_eq!(vec![1, 6, 5], get_broken_springs(&str_to_chars("#....######..#####.")));
+    fn get_damaged_springs_test() {
+        assert_eq!(vec![3], get_damaged_springs(&str_to_chars("...###")));
+        assert_eq!(vec![1, 1, 3], get_damaged_springs(&str_to_chars("#.#.###")));
+        assert_eq!(vec![1, 3, 1, 6], get_damaged_springs(&str_to_chars(".#.###.#.######")));
+        assert_eq!(vec![4, 1, 1], get_damaged_springs(&str_to_chars("####.#...#...")));
+        assert_eq!(vec![1, 6, 5], get_damaged_springs(&str_to_chars("#....######..#####.")));
     }
 }
 
