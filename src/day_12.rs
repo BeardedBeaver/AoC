@@ -38,17 +38,43 @@ fn get_damaged_springs(springs: &Vec<char>) -> Vec<i32> {
     result
 }
 
+fn count_repeated_groups(pattern: &Vec<char>) -> usize {
+    let mut count = 0;
+    let mut prev_char: Option<char> = None;
+
+    for &c in pattern {
+        match prev_char {
+            Some(prev) if prev == c => {}
+            _ => {
+                count += 1;
+            }
+        }
+        prev_char = Some(c);
+    }
+
+    count
+}
+
 fn is_possible(pattern: &Vec<char>, damaged: &Vec<i32>) -> bool {
     let current_damaged = get_damaged_springs(&pattern);
 
+    // too soon to tell
     if current_damaged.len() < 2 {
         return true;
     }
 
+    // too many damaged groups at this point
     if current_damaged.len() > damaged.len() {
         return false;
     }
 
+    // not enough groups to fit a pattern
+    let groups = count_repeated_groups(&pattern);
+    if groups < damaged.len() {
+        return false;
+    }
+
+    // beginning of the pattern doesn't match
     for i in 0..current_damaged.len() - 1 {
         if i >= damaged.len() {
             return false;
