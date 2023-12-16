@@ -187,24 +187,47 @@ pub mod part2 {
         }
     }
 
-    fn solve_spring(s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
-        if let Some(pos) = s.iter().position(|c| *c == '?') {
-            let mut d = s.clone(); // damaged spring
-            d[pos] = '#';
+    #[derive(Default)]
+    struct CachedSolver {
+        cache: std::collections::HashMap<Vec<char>, u64>,
+    }
 
-            let mut o = s.clone(); // operational spring
-            o[pos] = '.';
+    impl CachedSolver {
+        fn solve_spring(self: &mut CachedSolver, s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
+            if let Some(count) = self.cache.get(s) {
+                return *count;
+            }
+            if let Some(pos) = s.iter().position(|c| *c == '?') {
+                let mut d = s.clone(); // damaged spring
+                d[pos] = '#';
 
-            return solve_spring(&d, &damaged) + solve_spring(&o, &damaged);
+                let mut o = s.clone(); // operational spring
+                o[pos] = '.';
+
+                let mut result = 0;
+                if is_possible(&d, &damaged) {
+                    let count = self.solve_spring(&d, &damaged);
+                    self.cache.insert(d, count);
+                    result += count;
+                }
+                if is_possible(&o, &damaged) {
+                    let count = self.solve_spring(&o, &damaged);
+                    self.cache.insert(o, count);
+                    result += count;
+                }
+                return result;
+            }
+            let pattern = get_damaged_springs(&s);
+            return if pattern == *damaged { 1 } else { 0 };
         }
-        let pattern = get_damaged_springs(&s);
-        return if pattern == *damaged { 1 } else { 0 };
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
         let mut result = 0;
-        for s in springs.iter() {
-            result += solve_spring(&s.statuses, &s.damaged);
+        let mut solver = CachedSolver::default();
+        for (i, s) in springs.iter().enumerate() {
+            result += solver.solve_spring(&s.statuses, &s.damaged);
+            println!("{i}");
         }
         result
     }
@@ -215,6 +238,7 @@ pub mod part2 {
             let mut springs = Vec::new();
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
                 let s = Springs::parse(line);
+                let s = fold(&s, 5);
                 springs.push(s);
             }
             solve(&springs).to_string()
@@ -251,30 +275,19 @@ pub mod part2 {
         #[test]
         fn solve_spring_test() {
             // unfold simple test
+            let mut solver = CachedSolver::default();
+
             let s = Springs::parse("???.### 1,1,3");
-            assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
 
             let s = Springs::parse(".??..??...?##. 1,1,3");
-            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
 
             let s = Springs::parse("????.######..#####. 1,6,5");
-            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
 
             let s = Springs::parse("?###???????? 3,2,1");
-            assert_eq!(10, solve_spring(&s.statuses, &s.damaged));
-
-            // folded cases
-            // let s = Springs::parse("???.### 1,1,3");
-            // assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
-
-            // let s = Springs::parse(".??..??...?##. 1,1,3");
-            // assert_eq!(16384, solve_spring(&s.statuses, &s.damaged));
-
-            // let s = Springs::parse("????.#...#... 4,1,1");
-            // assert_eq!(16, solve_spring(&s.statuses, &s.damaged));
-
-            // let s = Springs::parse("?###???????? 3,2,1");
-            // assert_eq!(506250, solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(10, solver.solve_spring(&s.statuses, &s.damaged));
         }
     }
 }
