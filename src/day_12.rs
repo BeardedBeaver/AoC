@@ -198,6 +198,7 @@ pub mod part1 {
 
 pub mod part2 {
     use super::*;
+    use std::time::Instant;
 
     fn fold(s: &Springs, fold_factor: usize) -> Springs {
         let mut statuses = Vec::new();
@@ -213,48 +214,48 @@ pub mod part2 {
         }
     }
 
-    #[derive(Default)]
-    struct CachedSolver {
-        cache: std::collections::HashMap<Vec<char>, u64>,
-    }
-
-    impl CachedSolver {
-        fn solve_spring(self: &mut CachedSolver, s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
-            if let Some(count) = self.cache.get(s) {
-                return *count;
+    fn solve_spring(s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
+        if let Some(pos) = s.iter().position(|c| *c == '?') {
+            // no broken springs left, time to check pattern early
+            if let None = s[pos..].iter().position(|&c| c == '#') {
+                let pattern = get_damaged_springs(&s);
+                return if pattern == *damaged { 1 } else { 0 };
             }
-            if let Some(pos) = s.iter().position(|c| *c == '?') {
-                let mut d = s.clone(); // damaged spring
-                d[pos] = '#';
 
-                let mut o = s.clone(); // operational spring
-                o[pos] = '.';
+            let mut d = s.clone(); // damaged spring
+            d[pos] = '#';
 
-                let mut result = 0;
-                if is_possible(&d, &damaged) {
-                    let count = self.solve_spring(&d, &damaged);
-                    self.cache.insert(d, count);
-                    result += count;
-                }
-                if is_possible(&o, &damaged) {
-                    let count = self.solve_spring(&o, &damaged);
-                    self.cache.insert(o, count);
-                    result += count;
-                }
-                return result;
+            let mut o = s.clone(); // operational spring
+            o[pos] = '.';
+
+            let mut result = 0;
+            if is_possible(&d, &damaged) {
+                let count = solve_spring(&d, &damaged);
+                result += count;
             }
-            let pattern = get_damaged_springs(&s);
-            return if pattern == *damaged { 1 } else { 0 };
+            if is_possible(&o, &damaged) {
+                let count = solve_spring(&o, &damaged);
+                result += count;
+            }
+            return result;
         }
+        // unknown springs not found, checking pattern
+        let pattern = get_damaged_springs(&s);
+        return if pattern == *damaged { 1 } else { 0 };
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
         let mut result = 0;
-        let mut solver = CachedSolver::default();
+
         for (i, s) in springs.iter().enumerate() {
-            result += solver.solve_spring(&s.statuses, &s.damaged);
-            println!("{i}");
+            let start_time = Instant::now();
+
+            result += solve_spring(&s.statuses, &s.damaged);
+
+            let elapsed_time = start_time.elapsed();
+            println!("Step {}: Time: {:?}", i, elapsed_time,);
         }
+
         result
     }
 
@@ -301,19 +302,17 @@ pub mod part2 {
         #[test]
         fn solve_spring_test() {
             // unfold simple test
-            let mut solver = CachedSolver::default();
-
             let s = Springs::parse("???.### 1,1,3");
-            assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
 
             let s = Springs::parse(".??..??...?##. 1,1,3");
-            assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
 
             let s = Springs::parse("????.######..#####. 1,6,5");
-            assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
 
             let s = Springs::parse("?###???????? 3,2,1");
-            assert_eq!(10, solver.solve_spring(&s.statuses, &s.damaged));
+            assert_eq!(10, solve_spring(&s.statuses, &s.damaged));
         }
     }
 }
