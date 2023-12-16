@@ -173,36 +173,38 @@ pub mod part1 {
 pub mod part2 {
     use super::*;
 
-    fn fold(s: &mut Springs, fold_factor: usize) {
+    fn fold(s: &Springs, fold_factor: usize) -> Springs {
         let mut statuses = Vec::new();
         for _ in 0..fold_factor - 1 {
             statuses.append(&mut s.statuses.clone());
             statuses.push('?');
         }
-        statuses.append(&mut s.statuses);
-        s.statuses = statuses;
+        statuses.append(&mut s.statuses.clone());
 
-        s.damaged = s.damaged.repeat(fold_factor);
+        Springs {
+            statuses: statuses,
+            damaged: s.damaged.repeat(fold_factor),
+        }
     }
 
-    fn solve_spring(s: &Springs) -> u64 {
-        let c1 = generate_possible_springs(&s.statuses, &s.damaged);
-        let f1 = c1.len();
+    fn solve_spring(s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
+        if let Some(pos) = s.iter().position(|c| *c == '?') {
+            let mut d = s.clone(); // damaged spring
+            d[pos] = '#';
 
-        let mut s2 = s.clone();
-        fold(&mut s2, 2);
-        let c2 = generate_possible_springs(&s2.statuses, &s2.damaged);
-        let f2 = c2.len();
+            let mut o = s.clone(); // operational spring
+            o[pos] = '.';
 
-        let factor = f2 / f1;
-        println!("{f1}, {f2}, {factor}");
-        return (f2 * factor * factor * factor) as u64;
+            return solve_spring(&d, &damaged) + solve_spring(&o, &damaged);
+        }
+        let pattern = get_damaged_springs(&s);
+        return if pattern == *damaged { 1 } else { 0 };
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
         let mut result = 0;
         for s in springs.iter() {
-            result += solve_spring(&s);
+            result += solve_spring(&s.statuses, &s.damaged);
         }
         result
     }
@@ -233,15 +235,13 @@ pub mod part2 {
 
         #[test]
         fn fold_test() {
-            let mut s = Springs::parse("???.### 1,1,3");
-            fold(&mut s, 5);
+            let s = fold(&Springs::parse("???.### 1,1,3"), 5);
             assert_eq!(
                 Springs::parse("???.###????.###????.###????.###????.### 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3"),
                 s
             );
 
-            let mut s = Springs::parse(".??..??...?##. 1,1,3");
-            fold(&mut s, 5);
+            let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
             assert_eq!(
                 Springs::parse(".??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##. 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3"),
                 s
@@ -250,10 +250,31 @@ pub mod part2 {
 
         #[test]
         fn solve_spring_test() {
-            assert_eq!(1, solve_spring(&Springs::parse("???.### 1,1,3")));
-            assert_eq!(16384, solve_spring(&Springs::parse(".??..??...?##. 1,1,3")));
-            assert_eq!(16, solve_spring(&Springs::parse("????.#...#... 4,1,1")));
-            assert_eq!(506250, solve_spring(&Springs::parse("?###???????? 3,2,1")));
+            // unfold simple test
+            let s = Springs::parse("???.### 1,1,3");
+            assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
+
+            let s = Springs::parse(".??..??...?##. 1,1,3");
+            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
+
+            let s = Springs::parse("????.######..#####. 1,6,5");
+            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
+
+            let s = Springs::parse("?###???????? 3,2,1");
+            assert_eq!(10, solve_spring(&s.statuses, &s.damaged));
+
+            // folded cases
+            // let s = Springs::parse("???.### 1,1,3");
+            // assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
+
+            // let s = Springs::parse(".??..??...?##. 1,1,3");
+            // assert_eq!(16384, solve_spring(&s.statuses, &s.damaged));
+
+            // let s = Springs::parse("????.#...#... 4,1,1");
+            // assert_eq!(16, solve_spring(&s.statuses, &s.damaged));
+
+            // let s = Springs::parse("?###???????? 3,2,1");
+            // assert_eq!(506250, solve_spring(&s.statuses, &s.damaged));
         }
     }
 }
