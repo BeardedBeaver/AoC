@@ -1,6 +1,6 @@
 use std::collections::LinkedList;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Springs {
     statuses: Vec<char>,
     damaged: Vec<i32>, // the size of each contiguous group of damaged (#) springs
@@ -154,63 +154,36 @@ pub mod part1 {
 pub mod part2 {
     use super::*;
 
-    fn get_combinations(configs: &Vec<Vec<char>>) -> Vec<Vec<char>> {
-        let mut result = Vec::new();
-
-        // well...
-        for i1 in 0..configs.len() {
-            for i2 in 0..configs.len() {
-                for i3 in 0..configs.len() {
-                    for i4 in 0..configs.len() {
-                        for i5 in 0..configs.len() {
-                            let mut case = Vec::new();
-                            case.append(&mut configs[i1].clone());
-                            case.push('?');
-                            case.append(&mut configs[i2].clone());
-                            case.push('?');
-                            case.append(&mut configs[i3].clone());
-                            case.push('?');
-                            case.append(&mut configs[i4].clone());
-                            case.push('?');
-                            case.append(&mut configs[i5].clone());
-
-                            result.push(case);
-                        }
-                    }
-                }
-            }
+    fn fold(s: &mut Springs, fold_factor: usize) {
+        let mut statuses = Vec::new();
+        for _ in 0..fold_factor - 1 {
+            statuses.append(&mut s.statuses.clone());
+            statuses.push('?');
         }
+        statuses.append(&mut s.statuses);
+        s.statuses = statuses;
 
-        result
+        s.damaged = s.damaged.repeat(fold_factor);
     }
 
     fn solve_spring(s: &Springs) -> u64 {
-        let configs = generate_possible_springs(&s.statuses, &s.damaged);
-        println!("{:?}", configs.len());
-        let configs = get_combinations(&configs);
-        println!("{:?}", configs.len());
+        let c1 = generate_possible_springs(&s.statuses, &s.damaged);
+        let f1 = c1.len();
 
-        let damaged = s.damaged.repeat(5);
+        let mut s2 = s.clone();
+        fold(&mut s2, 2);
+        let c2 = generate_possible_springs(&s2.statuses, &s2.damaged);
+        let f2 = c2.len();
 
-        let mut result = 0;
-        for pattern in configs.iter() {
-            let possible_configs = generate_possible_springs(pattern, &damaged);
-            for c in possible_configs.iter() {
-                let current_damaged = get_broken_springs(c);
-                if current_damaged == damaged {
-                    result += 1;
-                }
-            }
-        }
-
-        result
+        let factor = f2 / f1;
+        println!("{f1}, {f2}, {factor}");
+        (f2 * factor * factor * factor) as u64
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
         let mut result = 0;
         for s in springs.iter() {
             result += solve_spring(&s);
-            break;
         }
         result
     }
@@ -240,10 +213,28 @@ pub mod part2 {
         use super::*;
 
         #[test]
+        fn fold_test() {
+            let mut s = Springs::parse("???.### 1,1,3");
+            fold(&mut s, 5);
+            assert_eq!(
+                Springs::parse("???.###????.###????.###????.###????.### 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3"),
+                s
+            );
+
+            let mut s = Springs::parse(".??..??...?##. 1,1,3");
+            fold(&mut s, 5);
+            assert_eq!(
+                Springs::parse(".??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##. 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3"),
+                s
+            );
+        }
+
+        #[test]
         fn solve_spring_test() {
-            // assert_eq!(1, solve_spring(&Springs::parse("???.### 1,1,3")));
+            assert_eq!(1, solve_spring(&Springs::parse("???.### 1,1,3")));
             assert_eq!(16384, solve_spring(&Springs::parse(".??..??...?##. 1,1,3")));
             assert_eq!(16, solve_spring(&Springs::parse("????.#...#... 4,1,1")));
+            assert_eq!(506250, solve_spring(&Springs::parse("?###???????? 3,2,1")));
         }
     }
 }
