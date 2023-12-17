@@ -215,33 +215,65 @@ pub mod part2 {
     }
 
     fn solve_spring(s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
-        if let Some(pos) = s.iter().position(|c| *c == '?') {
-            // no broken springs left, time to check pattern early
-            if let None = s[pos..].iter().position(|&c| c == '#') {
-                let pattern = get_damaged_springs(&s);
-                return if pattern == *damaged { 1 } else { 0 };
-            }
-
-            let mut d = s.clone(); // damaged spring
-            d[pos] = '#';
-
-            let mut o = s.clone(); // operational spring
-            o[pos] = '.';
-
-            let mut result = 0;
-            if is_possible(&d, &damaged) {
-                let count = solve_spring(&d, &damaged);
-                result += count;
-            }
-            if is_possible(&o, &damaged) {
-                let count = solve_spring(&o, &damaged);
-                result += count;
-            }
-            return result;
+        let mut s = s.clone();
+        // trim all '.' characters in the beginning
+        while s.starts_with(&['.']) {
+            s.remove(0);
         }
-        // unknown springs not found, checking pattern
-        let pattern = get_damaged_springs(&s);
-        return if pattern == *damaged { 1 } else { 0 };
+
+        // not enough springs to continue
+        if s.is_empty() {
+            return if damaged.is_empty() { 1 } else { 0 };
+        }
+
+        let mut replace_pos = 0;
+        if s.starts_with(&['#']) {
+            if damaged.is_empty() {
+                return 0;
+            }
+
+            let mut damaged_count: usize = 0;
+            for c in s.iter() {
+                if *c != '#' {
+                    break;
+                }
+                damaged_count += 1;
+            }
+
+            if damaged_count == s.len() {
+                return (damaged.len() == 1 && damaged[0] == damaged_count as i32) as u64;
+            }
+
+            if s[damaged_count] == '.' {
+                s.drain(0..damaged_count);
+                assert!(!s.starts_with(&['#']));
+
+                let mut damaged = damaged.clone();
+                damaged.remove(0);
+                return solve_spring(&s, &damaged);
+            }
+
+            // we have ? after the last #, so it's too soon to tell,
+            // fallthrough the next branch
+            replace_pos = damaged_count;
+        }
+
+        let mut d = s.clone(); // damaged spring
+        d[replace_pos] = '#';
+
+        let mut o = s.clone(); // operational spring
+        o[replace_pos] = '.';
+
+        let mut result = 0;
+        if is_possible(&d, &damaged) {
+            let count = solve_spring(&d, &damaged);
+            result += count;
+        }
+        if is_possible(&o, &damaged) {
+            let count = solve_spring(&o, &damaged);
+            result += count;
+        }
+        return result;
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
@@ -301,7 +333,6 @@ pub mod part2 {
 
         #[test]
         fn solve_spring_test() {
-            // unfold simple test
             let s = Springs::parse("???.### 1,1,3");
             assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
 
