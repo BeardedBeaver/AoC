@@ -119,4 +119,39 @@ pub mod part1 {
             1
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn solve_pattern_test() {
+            let mut result = 0;
+
+            let mut pattern = Pattern::default();
+            pattern.cells.push(vec!['#', '.', '#', '#', '.', '.', '#', '#', '.']);
+            pattern.cells.push(vec!['.', '.', '#', '.', '#', '#', '.', '#', '.']);
+            pattern.cells.push(vec!['#', '#', '.', '.', '.', '.', '.', '.', '#']);
+            pattern.cells.push(vec!['#', '#', '.', '.', '.', '.', '.', '.', '#']);
+            pattern.cells.push(vec!['.', '.', '#', '.', '#', '#', '.', '#', '.']);
+            pattern.cells.push(vec!['.', '.', '#', '#', '.', '.', '#', '#', '.']);
+            pattern.cells.push(vec!['#', '.', '#', '.', '#', '#', '.', '#', '.']);
+
+            result += solve_pattern(&pattern);
+
+            let mut pattern = Pattern::default();
+
+            pattern.cells.push(vec!['#', '.', '.', '.', '#', '#', '.', '.', '#']);
+            pattern.cells.push(vec!['#', '.', '.', '.', '.', '#', '.', '.', '#']);
+            pattern.cells.push(vec!['.', '.', '#', '#', '.', '.', '#', '#', '#']);
+            pattern.cells.push(vec!['#', '#', '#', '#', '#', '.', '#', '#', '.']);
+            pattern.cells.push(vec!['#', '#', '#', '#', '#', '.', '#', '#', '.']);
+            pattern.cells.push(vec!['.', '.', '#', '#', '.', '.', '#', '#', '#']);
+            pattern.cells.push(vec!['#', '.', '.', '.', '.', '#', '.', '.', '#']);
+
+            result += solve_pattern(&pattern);
+
+            assert_eq!(405, result);
+        }
+    }
 }
