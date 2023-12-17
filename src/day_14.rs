@@ -276,18 +276,55 @@ pub mod part1 {
 pub mod part2 {
     use super::*;
 
-    fn tilt_cycle(field: &mut Field) {
+    fn tilt_field(field: &mut Field) -> (u64, u64, u64, u64) {
         field.tilt_north();
+        let a = get_load_north(field);
+
         field.tilt_west();
+        let b = get_load_north(field);
+
         field.tilt_south();
+        let c = get_load_north(field);
+
         field.tilt_east();
+        let d = get_load_north(field);
+
+        (a, b, c, d)
+    }
+
+    // to detect it as a cycle we need to make sure we have two consecutive matched lines
+    // it means that we need to be off by one for all further calculations
+    fn get_cycle(history: &Vec<(u64, u64, u64, u64)>, current_step: &(u64, u64, u64, u64)) -> Option<usize> {
+        if history.is_empty() {
+            return None;
+        }
+        if let Some(second_position) = history.iter().position(|item| item == current_step) {
+            if second_position == 0 {
+                return None;
+            }
+            if history[second_position - 1] == *history.last().unwrap() {
+                return Some(second_position - 1);
+            }
+        }
+        return None;
+    }
+
+    fn get_wrapped_index(cycle_start: usize, current_step: usize, n: usize) -> usize {
+        let cycle_len = current_step as usize - cycle_start - 1;
+        let index = (n - current_step + cycle_start - 1) % cycle_len + cycle_start;
+        return index;
     }
 
     fn solve_field(field: &mut Field) -> u64 {
-        // 1_000_000_000
-        for _ in 0..1_000 {
-            tilt_cycle(field);
-            println!("{}", get_load_north(&field));
+        let mut history = Vec::new();
+        let n = 1_000_000_000;
+        for i in 0..n {
+            let step_result = tilt_field(field);
+            if let Some(cycle_start) = get_cycle(&history, &step_result) {
+                let index = get_wrapped_index(cycle_start, i, n);
+                return history[index].3;
+            }
+            history.push(step_result);
         }
         get_load_north(&field)
     }
@@ -316,7 +353,7 @@ pub mod part2 {
         use super::*;
 
         #[test]
-        fn tilt_cycle_test() {
+        fn tilt_field_test() {
             let mut field = Field::default();
             field.rocks.push("O....#....".chars().collect());
             field.rocks.push("O.OO#....#".chars().collect());
@@ -329,7 +366,7 @@ pub mod part2 {
             field.rocks.push("#....###..".chars().collect());
             field.rocks.push("#OO..#....".chars().collect());
 
-            tilt_cycle(&mut field);
+            tilt_field(&mut field);
             assert_eq!(".....#....".chars().collect::<Vec<char>>(), field.rocks[0]);
             assert_eq!("....#...O#".chars().collect::<Vec<char>>(), field.rocks[1]);
             assert_eq!("...OO##...".chars().collect::<Vec<char>>(), field.rocks[2]);
@@ -341,7 +378,7 @@ pub mod part2 {
             assert_eq!("#...O###..".chars().collect::<Vec<char>>(), field.rocks[8]);
             assert_eq!("#..OO#....".chars().collect::<Vec<char>>(), field.rocks[9]);
 
-            tilt_cycle(&mut field);
+            tilt_field(&mut field);
             assert_eq!(".....#....".chars().collect::<Vec<char>>(), field.rocks[0]);
             assert_eq!("....#...O#".chars().collect::<Vec<char>>(), field.rocks[1]);
             assert_eq!(".....##...".chars().collect::<Vec<char>>(), field.rocks[2]);
@@ -353,7 +390,7 @@ pub mod part2 {
             assert_eq!("#..OO###..".chars().collect::<Vec<char>>(), field.rocks[8]);
             assert_eq!("#.OOO#...O".chars().collect::<Vec<char>>(), field.rocks[9]);
 
-            tilt_cycle(&mut field);
+            tilt_field(&mut field);
             assert_eq!(".....#....".chars().collect::<Vec<char>>(), field.rocks[0]);
             assert_eq!("....#...O#".chars().collect::<Vec<char>>(), field.rocks[1]);
             assert_eq!(".....##...".chars().collect::<Vec<char>>(), field.rocks[2]);
@@ -364,6 +401,65 @@ pub mod part2 {
             assert_eq!(".......OOO".chars().collect::<Vec<char>>(), field.rocks[7]);
             assert_eq!("#...O###.O".chars().collect::<Vec<char>>(), field.rocks[8]);
             assert_eq!("#.OOO#...O".chars().collect::<Vec<char>>(), field.rocks[9]);
+        }
+
+        #[test]
+        fn get_cycle_test() {
+            let mut history = Vec::new();
+
+            history.push((136, 136, 87, 87));
+            history.push((129, 129, 69, 69));
+            history.push((114, 114, 69, 69));
+            history.push((110, 110, 69, 69));
+            history.push((110, 110, 65, 65));
+            history.push((105, 105, 64, 64));
+
+            assert_eq!(None, get_cycle(&history, &(103, 103, 65, 65)));
+            history.push((103, 103, 65, 65));
+
+            assert_eq!(None, get_cycle(&history, &(106, 106, 63, 63)));
+            history.push((106, 106, 63, 63));
+
+            assert_eq!(None, get_cycle(&history, &(111, 111, 68, 68)));
+            history.push((111, 111, 68, 68));
+
+            assert_eq!(None, get_cycle(&history, &(114, 114, 69, 69)));
+            history.push((114, 114, 69, 69));
+
+            assert_eq!(Some(2), get_cycle(&history, &(110, 110, 69, 69)));
+        }
+
+        #[test]
+        fn get_wrapped_index_test() {
+            assert_eq!(6, get_wrapped_index(2, 10, 20));
+            assert_eq!(7, get_wrapped_index(2, 10, 21));
+            assert_eq!(8, get_wrapped_index(2, 10, 22));
+            assert_eq!(2, get_wrapped_index(2, 10, 23));
+
+            assert_eq!(3, get_wrapped_index(2, 10, 24));
+            assert_eq!(4, get_wrapped_index(2, 10, 25));
+            assert_eq!(5, get_wrapped_index(2, 10, 26));
+            assert_eq!(6, get_wrapped_index(2, 10, 27));
+            assert_eq!(7, get_wrapped_index(2, 10, 28));
+            assert_eq!(8, get_wrapped_index(2, 10, 29));
+            assert_eq!(2, get_wrapped_index(2, 10, 30));
+        }
+
+        #[test]
+        fn solve_test() {
+            let mut field = Field::default();
+            field.rocks.push("O....#....".chars().collect());
+            field.rocks.push("O.OO#....#".chars().collect());
+            field.rocks.push(".....##...".chars().collect());
+            field.rocks.push("OO.#O....O".chars().collect());
+            field.rocks.push(".O.....O#.".chars().collect());
+            field.rocks.push("O.#..O.#.#".chars().collect());
+            field.rocks.push("..O..#O..O".chars().collect());
+            field.rocks.push(".......O..".chars().collect());
+            field.rocks.push("#....###..".chars().collect());
+            field.rocks.push("#OO..#....".chars().collect());
+
+            assert_eq!(64, solve_field(&mut field));
         }
     }
 }
