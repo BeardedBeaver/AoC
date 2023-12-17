@@ -311,7 +311,7 @@ pub mod part2 {
 
     fn get_wrapped_index(cycle_start: usize, current_step: usize, n: usize) -> usize {
         let cycle_len = current_step as usize - cycle_start - 1;
-        let index = (n - current_step + cycle_start - 1) % cycle_len + cycle_start;
+        let index = (n - cycle_start) % cycle_len + cycle_start;
         return index;
     }
 
@@ -321,7 +321,8 @@ pub mod part2 {
         for i in 0..n {
             let step_result = tilt_field(field);
             if let Some(cycle_start) = get_cycle(&history, &step_result) {
-                let index = get_wrapped_index(cycle_start, i, n);
+                // it's 0-based, so we need to find a value on nth - 1 step. damn you off-by-one
+                let index = get_wrapped_index(cycle_start, i, n - 1);
                 return history[index].3;
             }
             history.push(step_result);
