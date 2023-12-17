@@ -198,7 +198,7 @@ pub mod part1 {
 
 pub mod part2 {
     use super::*;
-    use std::time::Instant;
+    use std::collections::HashMap;
 
     fn fold(s: &Springs, fold_factor: usize) -> Springs {
         let mut statuses = Vec::new();
@@ -214,81 +214,103 @@ pub mod part2 {
         }
     }
 
-    fn solve_spring(s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
-        let mut s = s.clone();
-        // trim all '.' characters in the beginning
-        while s.starts_with(&['.']) {
-            s.remove(0);
+    #[derive(Default)]
+    struct CachedSolver {
+        cache: HashMap<Vec<char>, HashMap<Vec<i32>, u64>>,
+    }
+
+    impl CachedSolver {
+        fn put_into_cache(&mut self, s: Vec<char>, damaged: Vec<i32>, result: u64) {
+            self.cache.entry(s).or_insert_with(HashMap::new).insert(damaged, result);
         }
 
-        // not enough springs to continue
-        if s.is_empty() {
-            return if damaged.is_empty() { 1 } else { 0 };
+        fn get_from_cache(&self, s: &Vec<char>, damaged: &Vec<i32>) -> Option<&u64> {
+            if let Some(inner_map) = self.cache.get(s) {
+                return inner_map.get(damaged);
+            }
+            None
         }
 
-        let mut replace_pos = 0;
-        if s.starts_with(&['#']) {
-            if damaged.is_empty() {
-                return 0;
+        fn solve_spring(self: &mut CachedSolver, s: &Vec<char>, damaged: &Vec<i32>) -> u64 {
+            let mut s = s.clone();
+            // trim all '.' characters in the beginning
+            while s.starts_with(&['.']) {
+                s.remove(0);
             }
 
-            let mut damaged_count: usize = 0;
-            for c in s.iter() {
-                if *c != '#' {
-                    break;
-                }
-                damaged_count += 1;
+            // not enough springs to continue
+            if s.is_empty() {
+                return if damaged.is_empty() { 1 } else { 0 };
             }
 
-            if damaged_count == s.len() {
-                return (damaged.len() == 1 && damaged[0] == damaged_count as i32) as u64;
+            // check cached value
+            if let Some(value) = self.get_from_cache(&s, &damaged) {
+                return *value;
             }
 
-            if s[damaged_count] == '.' {
-                if damaged[0] != damaged_count as i32 {
+            let mut replace_pos = 0;
+            if s.starts_with(&['#']) {
+                if damaged.is_empty() {
                     return 0;
                 }
-                s.drain(0..damaged_count);
-                assert!(!s.starts_with(&['#']));
 
-                let mut damaged = damaged.clone();
-                damaged.remove(0);
-                return solve_spring(&s, &damaged);
+                let mut damaged_count: usize = 0;
+                for c in s.iter() {
+                    if *c != '#' {
+                        break;
+                    }
+                    damaged_count += 1;
+                }
+
+                if damaged_count == s.len() {
+                    return (damaged.len() == 1 && damaged[0] == damaged_count as i32) as u64;
+                }
+
+                if s[damaged_count] == '.' {
+                    if damaged[0] != damaged_count as i32 {
+                        return 0;
+                    }
+                    s.drain(0..damaged_count);
+                    assert!(!s.starts_with(&['#']));
+
+                    let mut damaged = damaged.clone();
+                    damaged.remove(0);
+                    return self.solve_spring(&s, &damaged);
+                }
+
+                // we have ? after the last #, so it's too soon to tell,
+                // fallthrough the next branch
+                replace_pos = damaged_count;
             }
 
-            // we have ? after the last #, so it's too soon to tell,
-            // fallthrough the next branch
-            replace_pos = damaged_count;
-        }
+            let mut d = s.clone(); // damaged spring
+            d[replace_pos] = '#';
 
-        let mut d = s.clone(); // damaged spring
-        d[replace_pos] = '#';
+            let mut o = s.clone(); // operational spring
+            o[replace_pos] = '.';
 
-        let mut o = s.clone(); // operational spring
-        o[replace_pos] = '.';
-
-        let mut result = 0;
-        if is_possible(&d, &damaged) {
-            let count = solve_spring(&d, &damaged);
-            result += count;
+            let mut result = 0;
+            if is_possible(&d, &damaged) {
+                let count = self.solve_spring(&d, &damaged);
+                self.put_into_cache(d, damaged.clone(), result);
+                result += count;
+            }
+            if is_possible(&o, &damaged) {
+                let count = self.solve_spring(&o, &damaged);
+                self.put_into_cache(o, damaged.clone(), result);
+                result += count;
+            }
+            self.put_into_cache(s, damaged.clone(), result);
+            return result;
         }
-        if is_possible(&o, &damaged) {
-            let count = solve_spring(&o, &damaged);
-            result += count;
-        }
-        return result;
     }
 
     fn solve(springs: &Vec<Springs>) -> u64 {
         let mut result = 0;
 
-        for (i, s) in springs.iter().enumerate() {
-            let start_time = Instant::now();
-
-            result += solve_spring(&s.statuses, &s.damaged);
-
-            let elapsed_time = start_time.elapsed();
-            println!("Step {}: Time: {:?}", i, elapsed_time,);
+        for s in springs.iter() {
+            let mut solver = CachedSolver::default();
+            result += solver.solve_spring(&s.statuses, &s.damaged);
         }
 
         result
@@ -336,20 +358,49 @@ pub mod part2 {
 
         #[test]
         fn solve_spring_test() {
+            // let mut solver = CachedSolver::default();
             // let s = Springs::parse("???.### 1,1,3");
-            // assert_eq!(1, solve_spring(&s.statuses, &s.damaged));
+            // assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
 
-            let s = Springs::parse(".??..??...?##. 1,1,3");
-            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
+            // let mut solver = CachedSolver::default();
+            // let s = Springs::parse(".??..??...?##. 1,1,3");
+            // assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
 
-            let s = Springs::parse("????.######..#####. 1,6,5");
-            assert_eq!(4, solve_spring(&s.statuses, &s.damaged));
+            // let mut solver = CachedSolver::default();
+            // let s = Springs::parse("????.######..#####. 1,6,5");
+            // assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
 
-            let s = Springs::parse("?###???????? 3,2,1");
-            assert_eq!(10, solve_spring(&s.statuses, &s.damaged));
+            // let mut solver = CachedSolver::default();
+            // let s = Springs::parse("?###???????? 3,2,1");
+            // assert_eq!(10, solver.solve_spring(&s.statuses, &s.damaged));
 
-            let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
-            assert_eq!(16384, solve_spring(&s.statuses, &s.damaged));
+            // let mut solver = CachedSolver::default();
+            // let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
+            // assert_eq!(16384, solver.solve_spring(&s.statuses, &s.damaged));
+
+            // let mut solver = CachedSolver::default();
+            // let s = fold(&Springs::parse("???.### 1,1,3"), 5);
+            // assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
+
+            // let mut solver = CachedSolver::default();
+            // let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
+            // assert_eq!(16384, solver.solve_spring(&s.statuses, &s.damaged));
+
+            // let mut solver = CachedSolver::default();
+            // let s = fold(&Springs::parse("?#?#?#?#?#?#?#? 1,3,1,6"), 5);
+            // assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
+
+            // let mut solver = CachedSolver::default();
+            // let s = fold(&Springs::parse("????.#...#... 4,1,1"), 5);
+            // assert_eq!(16, solver.solve_spring(&s.statuses, &s.damaged));
+
+            // let mut solver = CachedSolver::default();
+            // let s = fold(&Springs::parse("????.######..#####. 1,6,5"), 5);
+            // assert_eq!(2500, solver.solve_spring(&s.statuses, &s.damaged));
+
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse("?###???????? 3,2,1"), 5);
+            assert_eq!(506250, solver.solve_spring(&s.statuses, &s.damaged));
         }
     }
 }
