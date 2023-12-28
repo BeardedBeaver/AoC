@@ -17,6 +17,7 @@ mod day_12;
 mod day_13;
 mod day_14;
 mod day_15;
+mod day_16;
 
 fn day_matched(arg: i32, day: i32) -> bool {
     arg < 0 || arg == day
