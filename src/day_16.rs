@@ -403,3 +403,80 @@ pub mod part1 {
         }
     }
 }
+
+pub mod part2 {
+    use super::*;
+
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let field = Field::from_file(file_name);
+            let mut result: u64 = 0;
+
+            let col_count = field.column_count;
+            let row_count = field.nodes.len();
+
+            // from north to south
+            for i in 0..col_count {
+                let mut current_field = field.clone();
+                let beams = vec![Beam {
+                    row: 0,
+                    col: i as i32,
+                    direction: Direction::South,
+                }];
+
+                current_field.traverse(beams);
+                result = std::cmp::max(result, current_field.score());
+            }
+
+            // from south to north
+            for i in 0..col_count {
+                let mut current_field = field.clone();
+                let beams = vec![Beam {
+                    row: (row_count - 1) as i32,
+                    col: i as i32,
+                    direction: Direction::North,
+                }];
+
+                current_field.traverse(beams);
+                result = std::cmp::max(result, current_field.score());
+            }
+
+            // from west to east
+            for i in 0..row_count {
+                let mut current_field = field.clone();
+                let beams = vec![Beam {
+                    row: i as i32,
+                    col: 0,
+                    direction: Direction::East,
+                }];
+
+                current_field.traverse(beams);
+                result = std::cmp::max(result, current_field.score());
+            }
+
+            // from west to east
+            for i in 0..row_count {
+                let mut current_field = field.clone();
+                let beams = vec![Beam {
+                    row: i as i32,
+                    col: (col_count - 1) as i32,
+                    direction: Direction::East,
+                }];
+
+                current_field.traverse(beams);
+                result = std::cmp::max(result, current_field.score());
+            }
+
+            result.to_string()
+        }
+
+        fn day() -> i32 {
+            16
+        }
+
+        fn part() -> i32 {
+            2
+        }
+    }
+}
