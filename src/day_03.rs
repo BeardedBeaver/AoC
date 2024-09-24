@@ -38,7 +38,7 @@ impl Matrix {
 }
 
 // Scans left starting from the current position and tries to find a number
-// that is strickly to the left of it. Returns 0 if not found (meaning that
+// that is strictly to the left of it. Returns 0 if not found (meaning that
 // there is a non-number character to the left of i, j.
 // Will return 0 in case of 12.*.. (where * is a starting position)
 // Will return 12 in case of .12*..
@@ -64,7 +64,7 @@ fn scan_left(matrix: &Matrix, i: usize, j: usize) -> u64 {
 }
 
 // Scans right starting from the current position and tries to find a number
-// that is strickly to the right of it. Returns 0 if not found (meaning that
+// that is strictly to the right of it. Returns 0 if not found (meaning that
 // there is a non-number character to the right of i, j
 fn scan_right(matrix: &Matrix, i: usize, j: usize) -> u64 {
     let mut current_col: i32 = j as i32 + 1;

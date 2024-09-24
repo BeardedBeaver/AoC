@@ -118,7 +118,7 @@ pub mod part2 {
             // This approach is actually cheating. An actual path in an input graph
             // consists of two parts - first path from A-node to Z-node, and a loop
             // from the next node after Z-node back to the Z-node. The trick is that
-            // in all (apparantly) input graphs these two parts have equal length.
+            // in all (apparently) input graphs these two parts have equal length.
             // So this code doesn't try to find a loop and solve an arbitrary version
             // of the input graph, but rather makes the first run from A to Z and
             // assumes this value is also a length of the loop.

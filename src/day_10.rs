@@ -95,9 +95,9 @@ impl Map {
     }
 
     fn get_possible_paths_from_start(self: &Map) -> (Point, Point) {
-        let indicies = vec![(0, -1), (-1, 0), (1, 0), (0, 1)];
+        let indices = vec![(0, -1), (-1, 0), (1, 0), (0, 1)];
         let mut result = Vec::new();
-        for i in indicies.iter() {
+        for i in indices.iter() {
             let r = self.start.row as i32 + i.0;
             let c = self.start.col as i32 + i.1;
             if r < 0 {

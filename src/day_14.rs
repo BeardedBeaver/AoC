@@ -3,7 +3,7 @@ struct Field {
     rocks: Vec<Vec<char>>,
 }
 
-// this is awfly similar to day 13, at some point I need to move some of this common stuff to
+// this is awfully similar to day 13, at some point I need to move some of this common stuff to
 // a common module
 impl Field {
     // rotates a field counter-clockwise
