@@ -1,22 +1,23 @@
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Node {
     kind: char,
-    energised: u8,
+    energized: u32,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Field {
     nodes: Vec<Vec<Node>>,
     column_count: usize,
 }
 
+#[derive(Clone, Copy)]
 enum Direction {
-    North,
-    West,
-    South,
-    East,
+    North = 0x1,
+    West = 0x2,
+    South = 0x4,
+    East = 0x8,
 }
-
+#[derive(Clone, Copy)]
 struct Beam {
     row: i32,
     col: i32,
@@ -25,15 +26,20 @@ struct Beam {
 
 impl Field {
     fn from_file(file_name: &str) -> Field {
-        let mut result = Field::default();
+        let file_content = std::fs::read_to_string(file_name).unwrap();
+        let lines = file_content.lines().collect::<Vec<_>>();
+        Field::from_lines(&lines)
+    }
 
-        for s in std::fs::read_to_string(file_name).unwrap().lines() {
+    fn from_lines(lines: &Vec<&str>) -> Field {
+        let mut result = Field::default();
+        for s in lines.iter() {
             let mut line = Vec::with_capacity(s.len());
             result.column_count = s.len();
             for c in s.as_bytes() {
                 line.push(Node {
                     kind: *c as char,
-                    energised: 0,
+                    energized: 0,
                 })
             }
             result.nodes.push(line);
@@ -42,55 +48,167 @@ impl Field {
         result
     }
 
-    fn traverse(self: &mut Field, start_row: i32, start_col: i32) {
+    fn traverse(self: &mut Field, mut beams: Vec<Beam>) {
         assert!(!self.nodes.is_empty());
-        let mut beams = vec![Beam {
-            row: start_row,
-            col: start_col,
-            direction: Direction::East,
-        }];
 
         while !beams.is_empty() {
+            // energize fields under beams
+            for beam in beams.iter() {
+                self.nodes[beam.row as usize][beam.col as usize].energized =
+                    self.nodes[beam.row as usize][beam.col as usize].energized | beam.direction as u32;
+            }
+
+            let mut next_beams: Vec<Beam> = Vec::with_capacity(beams.capacity());
+
+            // advance all beams
+            for beam in beams.iter() {
+                match self.nodes[beam.row as usize][beam.col as usize].kind {
+                    // just pass forward
+                    '.' => match &beam.direction {
+                        Direction::North => next_beams.push(Beam {
+                            row: beam.row - 1,
+                            col: beam.col,
+                            direction: beam.direction,
+                        }),
+                        Direction::West => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col - 1,
+                            direction: beam.direction,
+                        }),
+                        Direction::South => next_beams.push(Beam {
+                            row: beam.row + 1,
+                            col: beam.col,
+                            direction: beam.direction,
+                        }),
+                        Direction::East => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col + 1,
+                            direction: beam.direction,
+                        }),
+                    },
+                    // vertical splitter (reflect north and south)
+                    '|' => match &beam.direction {
+                        Direction::West | Direction::East => {
+                            next_beams.push(Beam {
+                                row: beam.row - 1,
+                                col: beam.col,
+                                direction: Direction::North,
+                            });
+                            next_beams.push(Beam {
+                                row: beam.row + 1,
+                                col: beam.col,
+                                direction: Direction::South,
+                            })
+                        }
+                        Direction::North => next_beams.push(Beam {
+                            row: beam.row - 1,
+                            col: beam.col,
+                            direction: beam.direction,
+                        }),
+                        Direction::South => next_beams.push(Beam {
+                            row: beam.row + 1,
+                            col: beam.col,
+                            direction: beam.direction,
+                        }),
+                    },
+                    // horizontal splitter (reflect west and east)
+                    '-' => match &beam.direction {
+                        Direction::North | Direction::South => {
+                            next_beams.push(Beam {
+                                row: beam.row,
+                                col: beam.col - 1,
+                                direction: Direction::West,
+                            });
+                            next_beams.push(Beam {
+                                row: beam.row,
+                                col: beam.col + 1,
+                                direction: Direction::East,
+                            })
+                        }
+                        Direction::West => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col - 1,
+                            direction: beam.direction,
+                        }),
+                        Direction::East => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col + 1,
+                            direction: beam.direction,
+                        }),
+                    },
+                    // diagonal mirror
+                    '/' => match &beam.direction {
+                        Direction::North => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col + 1,
+                            direction: Direction::East,
+                        }),
+                        Direction::South => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col - 1,
+                            direction: Direction::West,
+                        }),
+                        Direction::East => next_beams.push(Beam {
+                            row: beam.row - 1,
+                            col: beam.col,
+                            direction: Direction::North,
+                        }),
+                        Direction::West => next_beams.push(Beam {
+                            row: beam.row + 1,
+                            col: beam.col,
+                            direction: Direction::South,
+                        }),
+                    },
+
+                    // another diagonal mirror
+                    '\\' => match &beam.direction {
+                        Direction::North => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col - 1,
+                            direction: Direction::West,
+                        }),
+                        Direction::South => next_beams.push(Beam {
+                            row: beam.row,
+                            col: beam.col + 1,
+                            direction: Direction::East,
+                        }),
+                        Direction::East => next_beams.push(Beam {
+                            row: beam.row + 1,
+                            col: beam.col,
+                            direction: Direction::South,
+                        }),
+                        Direction::West => next_beams.push(Beam {
+                            row: beam.row - 1,
+                            col: beam.col,
+                            direction: Direction::North,
+                        }),
+                    },
+                    _ => unreachable!(),
+                }
+            }
+
             // remove all beams that went out of bounds
-            beams.retain(|beam| {
+            next_beams.retain(|beam| {
                 beam.row >= 0
                     && beam.col >= 0
                     && beam.row < self.nodes.len() as i32
                     && beam.col < self.column_count as i32
             });
 
-            // reflect all beams
-            let mut reflected = Vec::default();
-            for beam in beams.iter() {
-                match self.nodes[beam.row as usize][beam.col as usize] {
-                    &['\\', '/', '|', '-'] => reflected.push(beam.clone()),
-                    _ => ,
-                }
-            }
-
-            // remove all beams that were reflected
-
             // remove all beams that are going over the same path
+            next_beams
+                .retain(|beam| self.nodes[beam.row as usize][beam.col as usize].energized & beam.direction as u32 == 0);
 
-            // advance all beams
-            for beam in beams.iter_mut() {
-                match &beam.direction {
-                    Direction::North => beam.row -= 1,
-                    Direction::West => beam.row -= 1,
-                    Direction::South => beam.col += 1,
-                    Direction::East => beam.col += 1,
-                }
-            }
-
-            // mark fields under beams
+            // reassign beams
+            beams = next_beams;
         }
     }
 
-    fn energized(self: &Field) -> u64 {
+    fn score(self: &Field) -> u64 {
         let mut result = 0;
         for line in self.nodes.iter() {
             for node in line.iter() {
-                if node.energised != 0 {
+                if node.energized != 0 {
                     result += 1;
                 }
             }
@@ -105,10 +223,16 @@ pub mod part1 {
     pub struct Solver {}
     impl crate::aoc::Solver for Solver {
         fn solve(file_name: &str) -> String {
-            let field = Field::from_file(file_name);
-            let mut result = 0;
+            let mut field = Field::from_file(file_name);
 
-            result.to_string()
+            let beams = vec![Beam {
+                row: 0,
+                col: 0,
+                direction: Direction::East,
+            }];
+
+            field.traverse(beams);
+            field.score().to_string()
         }
 
         fn day() -> i32 {
@@ -123,5 +247,159 @@ pub mod part1 {
     #[cfg(test)]
     mod tests {
         use super::*;
+
+        #[test]
+        fn from_lines_test() {
+            let lines = vec!["\\/|-", "..-.", "....", "|-|-"];
+            let field = Field::from_lines(&lines);
+
+            assert_eq!(field.nodes[0][0].kind, '\\');
+            assert_eq!(field.nodes[0][1].kind, '/');
+            assert_eq!(field.nodes[0][2].kind, '|');
+            assert_eq!(field.nodes[0][3].kind, '-');
+
+            assert_eq!(field.nodes[1][0].kind, '.');
+            assert_eq!(field.nodes[1][1].kind, '.');
+            assert_eq!(field.nodes[1][2].kind, '-');
+            assert_eq!(field.nodes[1][3].kind, '.');
+
+            assert_eq!(field.nodes[2][0].kind, '.');
+            assert_eq!(field.nodes[2][1].kind, '.');
+            assert_eq!(field.nodes[2][2].kind, '.');
+            assert_eq!(field.nodes[2][3].kind, '.');
+
+            assert_eq!(field.nodes[3][0].kind, '|');
+            assert_eq!(field.nodes[3][1].kind, '-');
+            assert_eq!(field.nodes[3][2].kind, '|');
+            assert_eq!(field.nodes[3][3].kind, '-');
+        }
+
+        #[test]
+        fn traverse_east_simple_test() {
+            let lines = vec!["....", "....", "....", "...."];
+            let mut field = Field::from_lines(&lines);
+            let beams = vec![Beam {
+                row: 0,
+                col: 0,
+                direction: Direction::East,
+            }];
+
+            field.traverse(beams);
+
+            assert_eq!(field.nodes[0][0].energized, 0x8);
+            assert_eq!(field.nodes[0][1].energized, 0x8);
+            assert_eq!(field.nodes[0][2].energized, 0x8);
+            assert_eq!(field.nodes[0][3].energized, 0x8);
+
+            for i in 1..4 as usize {
+                assert_eq!(field.nodes[i][0].energized, 0);
+                assert_eq!(field.nodes[i][1].energized, 0);
+                assert_eq!(field.nodes[i][2].energized, 0);
+                assert_eq!(field.nodes[i][3].energized, 0);
+            }
+        }
+
+        #[test]
+        fn traverse_south_simple_test() {
+            let lines = vec!["....", "....", "....", "...."];
+            let mut field = Field::from_lines(&lines);
+            let beams = vec![Beam {
+                row: 0,
+                col: 1, // Starting from the second column
+                direction: Direction::South,
+            }];
+
+            field.traverse(beams);
+
+            assert_eq!(field.nodes[0][1].energized, 0x4);
+            assert_eq!(field.nodes[1][1].energized, 0x4);
+            assert_eq!(field.nodes[2][1].energized, 0x4);
+            assert_eq!(field.nodes[3][1].energized, 0x4);
+
+            for i in 0..4 as usize {
+                assert_eq!(field.nodes[i][0].energized, 0);
+                assert_eq!(field.nodes[i][2].energized, 0);
+                assert_eq!(field.nodes[i][3].energized, 0);
+            }
+        }
+
+        #[test]
+        fn traverse_west_simple_test() {
+            let lines = vec!["....", "....", "....", "...."];
+            let mut field = Field::from_lines(&lines);
+            let beams = vec![Beam {
+                row: 2, // Starting from the third row
+                col: 3, // Starting from the fourth column
+                direction: Direction::West,
+            }];
+
+            field.traverse(beams);
+
+            assert_eq!(field.nodes[2][3].energized, 0x2); // Energized by westward beam
+            assert_eq!(field.nodes[2][2].energized, 0x2);
+            assert_eq!(field.nodes[2][1].energized, 0x2);
+            assert_eq!(field.nodes[2][0].energized, 0x2);
+
+            // Ensure other nodes in the grid are not energized
+            for i in 0..4 as usize {
+                if i != 2 {
+                    assert_eq!(field.nodes[i][0].energized, 0);
+                    assert_eq!(field.nodes[i][1].energized, 0);
+                    assert_eq!(field.nodes[i][2].energized, 0);
+                    assert_eq!(field.nodes[i][3].energized, 0);
+                }
+            }
+        }
+
+        #[test]
+        fn traverse_north_simple_test() {
+            let lines = vec!["....", "....", "....", "...."];
+            let mut field = Field::from_lines(&lines);
+            let beams = vec![Beam {
+                row: 3, // Starting from the bottom row (fourth row)
+                col: 1, // Starting from the second column
+                direction: Direction::North,
+            }];
+
+            field.traverse(beams);
+
+            assert_eq!(field.nodes[3][1].energized, 0x1); // Energized by northward beam
+            assert_eq!(field.nodes[2][1].energized, 0x1);
+            assert_eq!(field.nodes[1][1].energized, 0x1);
+            assert_eq!(field.nodes[0][1].energized, 0x1);
+
+            // Ensure other nodes in the grid are not energized
+            for i in 0..4 as usize {
+                assert_eq!(field.nodes[i][0].energized, 0);
+                assert_eq!(field.nodes[i][2].energized, 0);
+                assert_eq!(field.nodes[i][3].energized, 0);
+            }
+        }
+
+        #[test]
+        fn traverse_example_test() {
+            let lines = vec![
+                ".|...\\....",
+                "|.-.\\.....",
+                ".....|-...",
+                "........|.",
+                "..........",
+                ".........\\",
+                "..../.\\\\..",
+                ".-.-/..|..",
+                ".|....-|.\\",
+                "..//.|....",
+            ];
+            let mut field = Field::from_lines(&lines);
+            let beams = vec![Beam {
+                row: 0,
+                col: 0,
+                direction: Direction::East,
+            }];
+
+            field.traverse(beams);
+
+            assert_eq!(field.score(), 46);
+        }
     }
 }
