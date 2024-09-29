@@ -17,6 +17,7 @@ enum Direction {
     South = 0x4,
     East = 0x8,
 }
+
 #[derive(Clone, Copy)]
 struct Beam {
     row: i32,
