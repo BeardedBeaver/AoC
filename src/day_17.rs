@@ -20,7 +20,7 @@ struct Waypoint {
 
 impl Ord for Waypoint {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.heat_loss.cmp(&other.heat_loss)
+        other.heat_loss.cmp(&self.heat_loss)
     }
 }
 
@@ -33,8 +33,8 @@ impl PartialOrd for Waypoint {
 #[derive(Debug, Default, Clone)]
 struct Field {
     nodes: Vec<Vec<u32>>,
-    row_count: usize,
-    col_count: usize,
+    row_count: i32,
+    col_count: i32,
 }
 
 impl Field {
@@ -48,13 +48,13 @@ impl Field {
         let mut result = Field::default();
         for s in lines.iter() {
             let mut line = Vec::with_capacity(s.len());
-            result.col_count = s.len();
+            result.col_count = s.len() as i32;
             for c in s.chars() {
                 line.push(c.to_digit(10).unwrap());
             }
             result.nodes.push(line);
         }
-        result.row_count = result.nodes.len();
+        result.row_count = result.nodes.len() as i32;
         result
     }
 
@@ -84,9 +84,33 @@ pub mod part1 {
     mod tests {
         use std::vec;
 
-        use crate::day_17::Field;
+        use crate::day_17::{Direction, Field, Waypoint};
 
         use super::*;
+
+        #[test]
+        fn cmp_test() {
+            let w1 = Waypoint {
+                row: 0,
+                col: 0,
+                prev_direction: Direction::Unknown,
+                straight_nodes: 0,
+                heat_loss: 1,
+            };
+
+            let w2 = Waypoint {
+                row: 0,
+                col: 0,
+                prev_direction: Direction::Unknown,
+                straight_nodes: 0,
+                heat_loss: 12,
+            };
+
+            assert!(w1 > w2);
+            assert!(w2 < w1);
+            assert!(w1 == w1);
+            assert!(w2 == w2);
+        }
 
         #[test]
         fn from_lines_test() {
@@ -125,6 +149,10 @@ pub mod part1 {
             ];
 
             let mut field = Field::from_lines(&lines);
+
+            assert_eq!(field.col_count, 13);
+            assert_eq!(field.row_count, 13);
+
             let result = field.traverse(0, 0, 12, 12);
 
             assert_eq!(result, Some(102));
