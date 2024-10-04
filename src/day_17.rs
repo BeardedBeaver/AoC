@@ -207,7 +207,9 @@ pub mod part1 {
 
     #[cfg(test)]
     mod tests {
-        use crate::day_17::{Direction, Field, Point, Waypoint};
+        use std::collections::HashMap;
+
+        use crate::day_17::{get_straight_path_length, Direction, Field, Point, Waypoint};
 
         #[test]
         fn cmp_test() {
@@ -247,6 +249,65 @@ pub mod part1 {
             assert_eq!(field.nodes[2][0], 0);
             assert_eq!(field.nodes[2][1], 1);
             assert_eq!(field.nodes[2][2], 9);
+        }
+
+        #[test]
+        fn get_straight_path_length_test() {
+            let path = HashMap::from([
+                (
+                    Point { row: 0, col: 0 },
+                    Waypoint {
+                        pos: Point { row: 0, col: 0 },
+                        direction: Direction::West,
+                        heat_loss: 0,
+                        previous: None,
+                    },
+                ),
+                (
+                    Point { row: 1, col: 0 },
+                    Waypoint {
+                        pos: Point { row: 1, col: 0 },
+                        direction: Direction::South,
+                        heat_loss: 0,
+                        previous: Some(Point { row: 0, col: 0 }),
+                    },
+                ),
+                (
+                    Point { row: 2, col: 0 },
+                    Waypoint {
+                        pos: Point { row: 2, col: 0 },
+                        direction: Direction::South,
+                        heat_loss: 0,
+                        previous: Some(Point { row: 1, col: 0 }),
+                    },
+                ),
+                (
+                    Point { row: 3, col: 0 },
+                    Waypoint {
+                        pos: Point { row: 3, col: 0 },
+                        direction: Direction::South,
+                        heat_loss: 0,
+                        previous: Some(Point { row: 2, col: 0 }),
+                    },
+                ),
+            ]);
+
+            assert_eq!(
+                get_straight_path_length(Direction::South, Point { row: 3, col: 0 }, &path),
+                3
+            );
+            assert_eq!(
+                get_straight_path_length(Direction::South, Point { row: 2, col: 0 }, &path),
+                2
+            );
+            assert_eq!(
+                get_straight_path_length(Direction::West, Point { row: 2, col: 0 }, &path),
+                0
+            );
+            assert_eq!(
+                get_straight_path_length(Direction::West, Point { row: 0, col: 0 }, &path),
+                1
+            );
         }
 
         #[test]
