@@ -1,6 +1,12 @@
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+struct Point {
+    row: i32,
+    col: i32,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
 enum Direction {
     Unknown = 0,
     North = 0x1,
@@ -11,10 +17,10 @@ enum Direction {
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 struct Waypoint {
-    row: usize,
-    col: usize,
-    prev_direction: Direction,
-    heat_loss: usize,
+    pos: Point,
+    direction: Direction,
+    heat_loss: i32,
+    previous: Option<Point>,
 }
 
 impl Ord for Waypoint {
@@ -31,7 +37,7 @@ impl PartialOrd for Waypoint {
 
 #[derive(Debug, Default, Clone)]
 struct Field {
-    nodes: Vec<Vec<u32>>,
+    nodes: Vec<Vec<i32>>,
     row_count: i32,
     col_count: i32,
 }
@@ -49,7 +55,7 @@ impl Field {
             let mut line = Vec::with_capacity(s.len());
             result.col_count = s.len() as i32;
             for c in s.chars() {
-                line.push(c.to_digit(10).unwrap());
+                line.push(c.to_digit(10).unwrap() as i32);
             }
             result.nodes.push(line);
         }
@@ -57,19 +63,83 @@ impl Field {
         result
     }
 
-    fn traverse(&mut self, start_row: usize, start_col: usize, finish_row: usize, finish_col: usize) -> Option<usize> {
-        let mut heap = BinaryHeap::new();
+    fn get_all_neighbors(&self, point: Point) -> HashMap<Direction, Point> {
+        let neighbors = HashMap::from([
+            (
+                Direction::North,
+                Point {
+                    row: point.row - 1,
+                    col: point.col,
+                },
+            ),
+            (
+                Direction::South,
+                Point {
+                    row: point.row + 1,
+                    col: point.col,
+                },
+            ),
+            (
+                Direction::West,
+                Point {
+                    row: point.row,
+                    col: point.col - 1,
+                },
+            ),
+            (
+                Direction::East,
+                Point {
+                    row: point.row,
+                    col: point.col + 1,
+                },
+            ),
+        ]);
 
-        heap.push(Waypoint {
-            row: start_row,
-            col: start_col,
-            prev_direction: Direction::Unknown,
+        let mut result = HashMap::new();
+
+        for (direction, point) in neighbors.into_iter() {
+            if point.col < 0 || point.row < 0 || point.col >= self.col_count || point.row >= self.row_count {
+                continue;
+            }
+            result.insert(direction, point);
+        }
+
+        result
+    }
+
+    fn traverse(&mut self, start: Point, finish: Point) -> Option<i32> {
+        let mut heap = BinaryHeap::new();
+        let mut waypoints: HashMap<Point, Waypoint> = HashMap::new();
+
+        let start_waypoint = Waypoint {
+            pos: start,
+            direction: Direction::Unknown,
             heat_loss: 0,
-        });
+            previous: None,
+        };
+
+        waypoints.insert(start, start_waypoint);
+        heap.push(start_waypoint);
 
         while let Some(waypoint) = heap.pop() {
-            if waypoint.col == finish_col && waypoint.row == finish_row {
+            if waypoint.pos.col == finish.col && waypoint.pos.row == finish.row {
                 return Some(waypoint.heat_loss);
+            }
+            let mut neighbors = self.get_all_neighbors(waypoint.pos);
+            for (direction, point) in neighbors.into_iter() {
+                let waypoint = Waypoint {
+                    pos: point,
+                    direction: direction,
+                    heat_loss: waypoint.heat_loss + self.nodes[point.row as usize][point.col as usize],
+                    previous: Some(point),
+                };
+                if let Some(existing_waypoint) = waypoints.get(&point) {
+                    if existing_waypoint.heat_loss >= waypoint.heat_loss {
+                        continue;
+                    }
+                }
+                waypoints.insert(point, waypoint);
+                heap.push(waypoint);
             }
         }
 
@@ -78,15 +148,19 @@ impl Field {
 }
 
 pub mod part1 {
-    use crate::day_17::Field;
+    use crate::day_17::{Field, Point};
     pub struct Solver {}
     impl crate::aoc::Solver for Solver {
         fn solve(file_name: &str) -> String {
             let mut field = Field::from_file(file_name);
 
-            let score = field
-                .traverse(0, 0, (field.row_count - 1) as usize, (field.col_count - 1) as usize)
-                .expect("path not found");
+            let start_point = Point { row: 0, col: 0 };
+            let finish_point = Point {
+                row: field.row_count - 1,
+                col: field.col_count - 1,
+            };
+
+            let score = field.traverse(start_point, finish_point).expect("path not found");
             score.to_string()
         }
 
@@ -101,22 +175,22 @@ pub mod part1 {
 
     #[cfg(test)]
     mod tests {
-        use crate::day_17::{Direction, Field, Waypoint};
+        use crate::day_17::{Direction, Field, Point, Waypoint};
 
         #[test]
         fn cmp_test() {
             let w1 = Waypoint {
-                row: 0,
-                col: 0,
-                prev_direction: Direction::Unknown,
+                pos: Point { row: 0, col: 0 },
+                direction: Direction::Unknown,
                 heat_loss: 1,
+                previous: None,
             };
 
             let w2 = Waypoint {
-                row: 0,
-                col: 0,
-                prev_direction: Direction::Unknown,
+                pos: Point { row: 0, col: 0 },
+                direction: Direction::Unknown,
                 heat_loss: 12,
+                previous: None,
             };
 
             assert!(w1 > w2);
@@ -166,7 +240,10 @@ pub mod part1 {
             assert_eq!(field.col_count, 13);
             assert_eq!(field.row_count, 13);
 
-            let result = field.traverse(0, 0, 12, 12);
+            let start_point = Point { row: 0, col: 0 };
+            let finish_point = Point { row: 12, col: 12 };
+
+            let result = field.traverse(start_point, finish_point);
 
             assert_eq!(result, Some(102));
         }
