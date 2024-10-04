@@ -6,7 +6,7 @@ struct Point {
     col: i32,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 enum Direction {
     Unknown = 0,
     North = 0x1,
@@ -15,7 +15,7 @@ enum Direction {
     East = 0x8,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct Waypoint {
     pos: Point,
     direction: Direction,
@@ -40,6 +40,28 @@ struct Field {
     nodes: Vec<Vec<i32>>,
     row_count: i32,
     col_count: i32,
+}
+
+fn get_straight_path_length(direction: Direction, point: Point, path: &HashMap<Point, Waypoint>) -> i32 {
+    let mut result = 0;
+    let mut point = point;
+    loop {
+        let waypoint = path.get(&point);
+        match waypoint {
+            None => break,
+            Some(waypoint) => {
+                if waypoint.direction != direction {
+                    break;
+                }
+                result += 1;
+                match waypoint.previous {
+                    None => break,
+                    Some(new_point) => point = new_point,
+                }
+            }
+        }
+    }
+    result
 }
 
 impl Field {
@@ -107,7 +129,7 @@ impl Field {
         result
     }
 
-    fn traverse(&mut self, start: Point, finish: Point) -> Option<i32> {
+    fn traverse(&self, start: Point, finish: Point) -> Option<i32> {
         let mut heap = BinaryHeap::new();
         let mut waypoints: HashMap<Point, Waypoint> = HashMap::new();
 
@@ -125,21 +147,31 @@ impl Field {
             if waypoint.pos.col == finish.col && waypoint.pos.row == finish.row {
                 return Some(waypoint.heat_loss);
             }
-            let mut neighbors = self.get_all_neighbors(waypoint.pos);
+            let neighbors = self.get_all_neighbors(waypoint.pos);
             for (direction, point) in neighbors.into_iter() {
-                let waypoint = Waypoint {
-                    pos: point,
-                    direction: direction,
-                    heat_loss: waypoint.heat_loss + self.nodes[point.row as usize][point.col as usize],
-                    previous: Some(point),
-                };
+                let heat_loss = waypoint.heat_loss + self.nodes[point.row as usize][point.col as usize];
+
                 if let Some(existing_waypoint) = waypoints.get(&point) {
-                    if existing_waypoint.heat_loss >= waypoint.heat_loss {
+                    if existing_waypoint.heat_loss >= heat_loss {
                         continue;
                     }
                 }
-                waypoints.insert(point, waypoint);
-                heap.push(waypoint);
+
+                // if let Some(prev_point) = waypoint.previous {
+                //     if get_straight_path_length(direction, prev_point, &waypoints) > 2 {
+                //         continue;
+                //     }
+                // }
+
+                let new_waypoint = Waypoint {
+                    pos: point,
+                    direction: direction,
+                    heat_loss: heat_loss,
+                    previous: Some(waypoint.pos),
+                };
+
+                waypoints.insert(point, new_waypoint);
+                heap.push(new_waypoint);
             }
         }
 
@@ -152,7 +184,7 @@ pub mod part1 {
     pub struct Solver {}
     impl crate::aoc::Solver for Solver {
         fn solve(file_name: &str) -> String {
-            let mut field = Field::from_file(file_name);
+            let field = Field::from_file(file_name);
 
             let start_point = Point { row: 0, col: 0 };
             let finish_point = Point {
@@ -235,7 +267,7 @@ pub mod part1 {
                 "4322674655533",
             ];
 
-            let mut field = Field::from_lines(&lines);
+            let field = Field::from_lines(&lines);
 
             assert_eq!(field.col_count, 13);
             assert_eq!(field.row_count, 13);
