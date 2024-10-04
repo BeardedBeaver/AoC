@@ -14,7 +14,6 @@ struct Waypoint {
     row: usize,
     col: usize,
     prev_direction: Direction,
-    straight_nodes: i32,
     heat_loss: usize,
 }
 
@@ -65,7 +64,6 @@ impl Field {
             row: start_row,
             col: start_col,
             prev_direction: Direction::Unknown,
-            straight_nodes: 0,
             heat_loss: 0,
         });
 
@@ -80,13 +78,30 @@ impl Field {
 }
 
 pub mod part1 {
+    use crate::day_17::Field;
+    pub struct Solver {}
+    impl crate::aoc::Solver for Solver {
+        fn solve(file_name: &str) -> String {
+            let mut field = Field::from_file(file_name);
+
+            let score = field
+                .traverse(0, 0, (field.row_count - 1) as usize, (field.col_count - 1) as usize)
+                .expect("path not found");
+            score.to_string()
+        }
+
+        fn day() -> i32 {
+            17
+        }
+
+        fn part() -> i32 {
+            1
+        }
+    }
+
     #[cfg(test)]
     mod tests {
-        use std::vec;
-
         use crate::day_17::{Direction, Field, Waypoint};
-
-        use super::*;
 
         #[test]
         fn cmp_test() {
@@ -94,7 +109,6 @@ pub mod part1 {
                 row: 0,
                 col: 0,
                 prev_direction: Direction::Unknown,
-                straight_nodes: 0,
                 heat_loss: 1,
             };
 
@@ -102,7 +116,6 @@ pub mod part1 {
                 row: 0,
                 col: 0,
                 prev_direction: Direction::Unknown,
-                straight_nodes: 0,
                 heat_loss: 12,
             };
 

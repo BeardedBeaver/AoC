@@ -110,4 +110,6 @@ fn main() {
 
     solve::<day_16::part1::Solver>(day);
     solve::<day_16::part2::Solver>(day);
+
+    solve::<day_17::part1::Solver>(day);
 }
