@@ -241,7 +241,7 @@ pub mod part2 {
 
         #[test]
         fn example_test() {
-            let mut puzzle = Puzzle::default();
+            let mut puzzle = Data::default();
 
             puzzle.seeds = vec![79, 14, 55, 13];
 

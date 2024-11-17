@@ -3,15 +3,6 @@
 version = 3
 
 [[package]]
-name = "advent-of-code"
-version = "0.1.0"
-dependencies = [
- "aoc",
- "clap",
- "year_2023",
-]
-
-[[package]]
 name = "anstream"
 version = "0.6.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -65,6 +56,15 @@ name = "aoc"
 version = "0.1.0"
 dependencies = [
  "glob",
+]
+
+[[package]]
+name = "aoc_runner"
+version = "0.1.0"
+dependencies = [
+ "aoc",
+ "clap",
+ "year_2023",
 ]
 
 [[package]]

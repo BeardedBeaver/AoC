@@ -1,0 +1,13 @@
+[package]
+name = "aoc_runner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.21", features = ["derive"] }
+aoc = { path = "../aoc" }
+year_2023 = { path = "../year_2023" }
+
+[[bin]]
+path = "main.rs"
+name = "aoc_runner"
