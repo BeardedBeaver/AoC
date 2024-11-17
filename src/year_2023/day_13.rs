@@ -108,8 +108,8 @@ pub mod part1 {
         result
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let patterns = parse_input(file_name);
             solve(&patterns).to_string()
@@ -121,6 +121,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 
@@ -216,8 +220,8 @@ pub mod part2 {
         result
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let patterns = parse_input(file_name);
             solve(&patterns, 1).to_string()
@@ -229,6 +233,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

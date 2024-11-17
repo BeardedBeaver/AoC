@@ -25,8 +25,8 @@ pub mod part1 {
         return line.last().unwrap() + solve_line(&delta);
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let lines = parse_input_file(file_name);
             let mut result = 0;
@@ -42,6 +42,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 
@@ -70,8 +74,8 @@ pub mod part2 {
         return line.first().unwrap() - solve_line(&delta);
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let lines = parse_input_file(file_name);
             let mut result = 0;
@@ -87,6 +91,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

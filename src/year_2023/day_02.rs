@@ -83,8 +83,8 @@ pub mod part1 {
         return max_red <= 12 && max_green <= 13 && max_blue <= 14;
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut result: u64 = 0;
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -104,6 +104,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 }
@@ -125,8 +129,8 @@ pub mod part2 {
         return max_red as u64 * max_green as u64 * max_blue as u64;
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut result: u64 = 0;
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -143,6 +147,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 }

@@ -44,14 +44,14 @@ impl Map {
 }
 
 #[derive(Default)]
-struct Puzzle {
+struct Data {
     seeds: Vec<u64>,
     maps: Vec<Map>,
 }
 
-impl Puzzle {
-    pub fn from_file(file_name: &str) -> Puzzle {
-        let mut result = Puzzle::default();
+impl Data {
+    pub fn from_file(file_name: &str) -> Data {
+        let mut result = Data::default();
         let mut map = Map::default();
 
         for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -99,12 +99,12 @@ mod tests {
 pub mod part1 {
     use super::*;
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut result: Option<u64> = None;
 
-            let puzzle = Puzzle::from_file(file_name);
+            let puzzle = Data::from_file(file_name);
 
             for seed in puzzle.seeds {
                 let mut seed = seed;
@@ -126,6 +126,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 }
@@ -166,15 +170,15 @@ pub mod part2 {
         result
     }
 
-    fn solve_puzzle_parallel(puzzle: &Puzzle) -> u64 {
-        let inputs: Vec<(u64, u64)> = puzzle.seeds.chunks(2).map(|chunk| (chunk[0], chunk[1])).collect();
+    fn solve_puzzle_parallel(data: &Data) -> u64 {
+        let inputs: Vec<(u64, u64)> = data.seeds.chunks(2).map(|chunk| (chunk[0], chunk[1])).collect();
         let chunks = split_ranges(&inputs, 25_000_000);
 
         let n_workers = std::thread::available_parallelism().unwrap().get();
         let pool = threadpool::ThreadPool::new(n_workers);
         let (tx, rx) = std::sync::mpsc::channel::<u64>();
 
-        let mappings = Arc::new(puzzle.maps.clone());
+        let mappings = Arc::new(data.maps.clone());
 
         for c in chunks {
             let tx = tx.clone();
@@ -192,11 +196,11 @@ pub mod part2 {
         result
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
-            let puzzle = Puzzle::from_file(file_name);
-            solve_puzzle_parallel(&puzzle).to_string()
+            let data = Data::from_file(file_name);
+            solve_puzzle_parallel(&data).to_string()
         }
 
         fn day() -> i32 {
@@ -205,6 +209,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

@@ -254,8 +254,8 @@ mod tests {
 pub mod part1 {
     use super::*;
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut result: u64 = 0;
             let matrix = Matrix::read_from_file(file_name);
@@ -283,14 +283,18 @@ pub mod part1 {
         fn part() -> i32 {
             1
         }
+
+        fn year() -> i32 {
+            2023
+        }
     }
 }
 
 pub mod part2 {
     use super::*;
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut result: u64 = 0;
             let matrix = Matrix::read_from_file(file_name);
@@ -318,6 +322,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 }

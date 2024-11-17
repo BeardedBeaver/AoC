@@ -56,8 +56,8 @@ pub mod part1 {
         1 * u64::pow(2, wins as u32 - 1)
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut result: u64 = 0;
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -73,6 +73,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 
@@ -111,8 +115,8 @@ pub mod part2 {
         pile.iter().sum()
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut cards: Vec<Card> = Vec::new();
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -128,6 +132,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

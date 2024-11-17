@@ -181,8 +181,8 @@ impl Field {
 
 pub mod part1 {
     use crate::day_17::{Field, Point};
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let field = Field::from_file(file_name);
 
@@ -202,6 +202,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

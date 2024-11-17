@@ -150,8 +150,8 @@ fn solve(universe: &Universe, cost: i64) -> i64 {
 pub mod part1 {
     use super::*;
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut universe = Universe::from_file(file_name);
             universe.expand();
@@ -165,14 +165,18 @@ pub mod part1 {
         fn part() -> i32 {
             1
         }
+
+        fn year() -> i32 {
+            2023
+        }
     }
 }
 
 pub mod part2 {
     use super::*;
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut universe = Universe::from_file(file_name);
             universe.expand();
@@ -185,6 +189,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 }

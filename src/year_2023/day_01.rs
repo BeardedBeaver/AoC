@@ -7,8 +7,8 @@ pub mod part1 {
         return first.to_digit(10).unwrap() as u64 * 10 + last.to_digit(10).unwrap() as u64;
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
             let mut result: u64 = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
@@ -23,6 +23,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 
@@ -98,8 +102,8 @@ pub mod part2 {
         return get_first_digit(line) * 10 + get_last_digit(line);
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
             let mut result: u64 = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
@@ -114,6 +118,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

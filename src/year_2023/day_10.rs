@@ -218,8 +218,8 @@ pub mod part1 {
         visited.len() as u64 / 2
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let map = Map::from_file(file_name);
             solve(&map).to_string()
@@ -231,6 +231,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 
@@ -301,8 +305,8 @@ pub mod part2 {
         result
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let map = Map::from_file(file_name);
             solve(&map).to_string()
@@ -314,6 +318,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

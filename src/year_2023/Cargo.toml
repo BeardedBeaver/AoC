@@ -1,0 +1,11 @@
+[package]
+name = "year_2023"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "year_2023.rs"
+
+[dependencies]
+threadpool = "1.8.1"
+aoc = { path = "../aoc" }

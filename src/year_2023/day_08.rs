@@ -50,8 +50,8 @@ mod tests {
 pub mod part1 {
     use super::*;
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let desert = load_desert_from_file(file_name);
 
@@ -80,6 +80,10 @@ pub mod part1 {
         fn part() -> i32 {
             1
         }
+
+        fn year() -> i32 {
+            2023
+        }
     }
 
     #[cfg(test)]
@@ -101,8 +105,8 @@ pub mod part2 {
         numbers.iter().fold(1, |acc, &x| acc * x / gcd(acc, x))
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let desert = load_desert_from_file(file_name);
 
@@ -151,6 +155,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 

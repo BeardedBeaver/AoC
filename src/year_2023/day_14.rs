@@ -253,8 +253,8 @@ pub mod part1 {
         get_load(&field)
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut field = Field::default();
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -269,6 +269,10 @@ pub mod part1 {
 
         fn part() -> i32 {
             1
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 }
@@ -330,8 +334,8 @@ pub mod part2 {
         get_load_north(&field)
     }
 
-    pub struct Solver {}
-    impl crate::aoc::Solver for Solver {
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
         fn solve(file_name: &str) -> String {
             let mut field = Field::default();
             for line in std::fs::read_to_string(file_name).unwrap().lines() {
@@ -346,6 +350,10 @@ pub mod part2 {
 
         fn part() -> i32 {
             2
+        }
+
+        fn year() -> i32 {
+            2023
         }
     }
 
