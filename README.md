@@ -3,7 +3,7 @@
 ## Running this code:
 
 Input files are expected to be in a folder pointed by `AOC_{year}_INPUT_PATH`
-(`AOC_2023_INPUT_PATH` for 2023).
+environment variable (`AOC_2023_INPUT_PATH` for 2023).
 
 ```
 export AOC_2023_INPUT_PATH=/path/to/folder-with-input
@@ -33,3 +33,8 @@ cargo run --release -- -y 2023 -d 5 -p 2
 
 *Ofc we need to run day 2024-5-2 in release :)*
 
+## Repo content
+
+- `aoc`: library containing basic helpers and traits
+- `year_2023`: collection of solutions for 2023
+- `aoc_runner`: a main executable that runs all available years
