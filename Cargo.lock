@@ -65,6 +65,7 @@ dependencies = [
  "aoc",
  "clap",
  "year_2023",
+ "year_2024",
 ]
 
 [[package]]
