@@ -20,12 +20,13 @@ struct Waypoint {
     pos: Point,
     direction: Direction,
     heat_loss: i32,
+    heuristic: i32,
     previous: Option<Point>,
 }
 
 impl Ord for Waypoint {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.heat_loss.cmp(&self.heat_loss)
+        (other.heat_loss + other.heuristic).cmp(&(self.heat_loss + &self.heuristic))
     }
 }
 
@@ -60,6 +61,14 @@ fn get_straight_path_length(direction: Direction, point: Point, path: &HashMap<P
                 }
             }
         }
+    }
+    result
+}
+
+fn get_empty_waypoints(field: &Field) -> Vec<Vec<Option<Waypoint>>> {
+    let mut result: Vec<Vec<Option<Waypoint>>> = Vec::with_capacity(field.nodes.len());
+    for row in field.nodes.iter() {
+        result.push(vec![None; row.len()]);
     }
     result
 }
@@ -131,31 +140,26 @@ impl Field {
 
     fn traverse(&self, start: Point, finish: Point) -> Option<i32> {
         let mut heap = BinaryHeap::new();
-        let mut waypoints: HashMap<Point, Waypoint> = HashMap::new();
+
+        let mut visited = get_empty_waypoints(&self);
 
         let start_waypoint = Waypoint {
             pos: start,
             direction: Direction::Unknown,
             heat_loss: 0,
+            heuristic: (start.row - finish.row).abs() + (start.col - finish.col).abs(),
             previous: None,
         };
 
-        waypoints.insert(start, start_waypoint);
         heap.push(start_waypoint);
 
         while let Some(waypoint) = heap.pop() {
-            if waypoint.pos.col == finish.col && waypoint.pos.row == finish.row {
+            if waypoint.pos == finish || true {
                 return Some(waypoint.heat_loss);
             }
             let neighbors = self.get_all_neighbors(waypoint.pos);
             for (direction, point) in neighbors.into_iter() {
                 let heat_loss = waypoint.heat_loss + self.nodes[point.row as usize][point.col as usize];
-
-                if let Some(existing_waypoint) = waypoints.get(&point) {
-                    if existing_waypoint.heat_loss >= heat_loss {
-                        continue;
-                    }
-                }
 
                 // if let Some(prev_point) = waypoint.previous {
                 //     if get_straight_path_length(direction, prev_point, &waypoints) > 2 {
@@ -167,10 +171,10 @@ impl Field {
                     pos: point,
                     direction: direction,
                     heat_loss: heat_loss,
+                    heuristic: 0,
                     previous: Some(waypoint.pos),
                 };
 
-                waypoints.insert(point, new_waypoint);
                 heap.push(new_waypoint);
             }
         }
@@ -213,7 +217,7 @@ pub mod part1 {
     mod tests {
         use std::collections::HashMap;
 
-        use crate::day_17::{get_straight_path_length, Direction, Field, Point, Waypoint};
+        use crate::day_17::{get_empty_waypoints, get_straight_path_length, Direction, Field, Point, Waypoint};
 
         #[test]
         fn cmp_test() {
@@ -221,6 +225,7 @@ pub mod part1 {
                 pos: Point { row: 0, col: 0 },
                 direction: Direction::Unknown,
                 heat_loss: 1,
+                heuristic: 5,
                 previous: None,
             };
 
@@ -228,6 +233,7 @@ pub mod part1 {
                 pos: Point { row: 0, col: 0 },
                 direction: Direction::Unknown,
                 heat_loss: 12,
+                heuristic: 5,
                 previous: None,
             };
 
@@ -235,6 +241,32 @@ pub mod part1 {
             assert!(w2 < w1);
             assert!(w1 == w1);
             assert!(w2 == w2);
+
+            let w3 = Waypoint {
+                pos: Point { row: 0, col: 0 },
+                direction: Direction::Unknown,
+                heat_loss: 1,
+                heuristic: 150,
+                previous: None,
+            };
+
+            assert!(w1 > w3);
+            assert!(w3 < w1);
+            assert!(w3 == w3);
+        }
+
+        #[test]
+        fn test_get_empty_waypoints() {
+            let lines = vec!["123", "456", "019"];
+            let field = Field::from_lines(&lines);
+            let waypoints = get_empty_waypoints(&field);
+
+            for (f_row, w_row) in std::iter::zip(field.nodes.iter(), waypoints.iter()) {
+                assert_eq!(f_row.len(), w_row.len());
+                for w in w_row {
+                    assert!(w.is_none());
+                }
+            }
         }
 
         #[test]
@@ -264,6 +296,7 @@ pub mod part1 {
                         pos: Point { row: 0, col: 0 },
                         direction: Direction::West,
                         heat_loss: 0,
+                        heuristic: 0,
                         previous: None,
                     },
                 ),
@@ -273,6 +306,7 @@ pub mod part1 {
                         pos: Point { row: 1, col: 0 },
                         direction: Direction::South,
                         heat_loss: 0,
+                        heuristic: 0,
                         previous: Some(Point { row: 0, col: 0 }),
                     },
                 ),
@@ -282,6 +316,7 @@ pub mod part1 {
                         pos: Point { row: 2, col: 0 },
                         direction: Direction::South,
                         heat_loss: 0,
+                        heuristic: 0,
                         previous: Some(Point { row: 1, col: 0 }),
                     },
                 ),
@@ -291,6 +326,7 @@ pub mod part1 {
                         pos: Point { row: 3, col: 0 },
                         direction: Direction::South,
                         heat_loss: 0,
+                        heuristic: 0,
                         previous: Some(Point { row: 2, col: 0 }),
                     },
                 ),
@@ -341,8 +377,7 @@ pub mod part1 {
             let finish_point = Point { row: 12, col: 12 };
 
             let result = field.traverse(start_point, finish_point);
-
-            // assert_eq!(result, Some(102));
+            assert_eq!(result, Some(102));
         }
     }
 }
