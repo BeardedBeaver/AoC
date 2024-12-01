@@ -78,10 +78,36 @@ pub mod part1 {
 }
 
 pub mod part2 {
+    use std::collections::HashMap;
+
+    use super::Input;
+
+    fn solve(input: &mut Input) -> u64 {
+        let mut counts: HashMap<i32, i32> = HashMap::default();
+
+        // count how many time each element occurs in the right list
+        for i in input.right.iter() {
+            *counts.entry(*i).or_insert(0) += 1;
+        }
+
+        // loop through the left list and compute the similarity score
+        let mut result: u64 = 0;
+        for i in input.left.iter() {
+            let count = *counts.entry(*i).or_default() as u64;
+            result += count * *i as u64;
+        }
+
+        result
+    }
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "345".to_owned()
+            let mut input = Input::default();
+            for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
+                input.add_line(line);
+            }
+            solve(&mut input).to_string()
         }
 
         fn day() -> i32 {
@@ -94,6 +120,21 @@ pub mod part2 {
 
         fn year() -> i32 {
             2024
+        }
+    }
+
+    mod tests {
+        #[test]
+        fn solve_test() {
+            let mut input = crate::day_01::Input::default();
+            input.add_line("3   4");
+            input.add_line("4   3");
+            input.add_line("2   5");
+            input.add_line("1   3");
+            input.add_line("3   9");
+            input.add_line("3   3");
+
+            assert_eq!(crate::day_01::part2::solve(&mut input), 31);
         }
     }
 }
