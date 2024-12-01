@@ -1,4 +1,4 @@
 [workspace]
-members = ["src/aoc", "src/aoc_runner", "src/year_2023"]
+members = ["src/aoc", "src/aoc_runner", "src/year_2023", "src/year_2024"]
 
 resolver = "2"

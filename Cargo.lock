@@ -289,3 +289,10 @@ dependencies = [
  "aoc",
  "threadpool",
 ]
+
+[[package]]
+name = "year_2024"
+version = "0.1.0"
+dependencies = [
+ "aoc",
+]
