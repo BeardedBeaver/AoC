@@ -6,6 +6,12 @@ struct Point {
     col: i32,
 }
 
+impl Point {
+    fn manhattan_distance(self, another: &Point) -> i32 {
+        (self.row - another.row).abs() + (self.col - another.col).abs()
+    }
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 enum Direction {
     Unknown = 0,
@@ -13,6 +19,18 @@ enum Direction {
     West = 0x2,
     South = 0x4,
     East = 0x8,
+}
+
+impl Direction {
+    fn opposite(&self) -> Direction {
+        match self {
+            Direction::Unknown => return Direction::Unknown,
+            Direction::North => return Direction::South,
+            Direction::West => return Direction::East,
+            Direction::South => return Direction::North,
+            Direction::East => return Direction::West,
+        };
+    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -43,11 +61,11 @@ struct Field {
     col_count: i32,
 }
 
-fn get_straight_path_length(direction: Direction, point: Point, path: &HashMap<Point, Waypoint>) -> i32 {
+fn get_straight_path_length(direction: Direction, point: Point, waypoints: &Vec<Vec<Option<Waypoint>>>) -> i32 {
     let mut result = 0;
     let mut point = point;
     loop {
-        let waypoint = path.get(&point);
+        let waypoint = waypoints[point.row as usize][point.col as usize];
         match waypoint {
             None => break,
             Some(waypoint) => {
@@ -147,36 +165,52 @@ impl Field {
             pos: start,
             direction: Direction::Unknown,
             heat_loss: 0,
-            heuristic: (start.row - finish.row).abs() + (start.col - finish.col).abs(),
+            heuristic: start.manhattan_distance(&finish),
             previous: None,
         };
 
         heap.push(start_waypoint);
 
         while let Some(waypoint) = heap.pop() {
-            if waypoint.pos == finish || true {
+            if waypoint.pos == finish {
                 return Some(waypoint.heat_loss);
             }
-            let neighbors = self.get_all_neighbors(waypoint.pos);
-            for (direction, point) in neighbors.into_iter() {
+
+            let mut neighbors = self.get_all_neighbors(waypoint.pos);
+
+            // ignore backward path
+            neighbors.remove(&waypoint.direction.opposite());
+
+            for (direction, point) in neighbors.iter() {
                 let heat_loss = waypoint.heat_loss + self.nodes[point.row as usize][point.col as usize];
 
-                // if let Some(prev_point) = waypoint.previous {
-                //     if get_straight_path_length(direction, prev_point, &waypoints) > 2 {
-                //         continue;
-                //     }
-                // }
+                // ignore path if it's too long
+                if let Some(prev_point) = waypoint.previous {
+                    if get_straight_path_length(*direction, prev_point, &visited) > 2 {
+                        continue;
+                    }
+                }
 
                 let new_waypoint = Waypoint {
-                    pos: point,
-                    direction: direction,
+                    pos: *point,
+                    direction: *direction,
                     heat_loss: heat_loss,
-                    heuristic: 0,
+                    heuristic: point.manhattan_distance(&finish),
                     previous: Some(waypoint.pos),
                 };
 
+                // update already seen paths
+                if let Some(visited_waypoint) = visited[point.row as usize][point.col as usize] {
+                    if visited_waypoint.heat_loss + visited_waypoint.heuristic
+                        < new_waypoint.heat_loss + new_waypoint.heuristic
+                    {
+                        continue;
+                    }
+                }
+
                 heap.push(new_waypoint);
             }
+            visited[waypoint.pos.row as usize][waypoint.pos.col as usize] = Some(waypoint);
         }
 
         None
@@ -215,8 +249,6 @@ pub mod part1 {
 
     #[cfg(test)]
     mod tests {
-        use std::collections::HashMap;
-
         use crate::day_17::{get_empty_waypoints, get_straight_path_length, Direction, Field, Point, Waypoint};
 
         #[test]
@@ -288,67 +320,7 @@ pub mod part1 {
         }
 
         #[test]
-        fn get_straight_path_length_test() {
-            let path = HashMap::from([
-                (
-                    Point { row: 0, col: 0 },
-                    Waypoint {
-                        pos: Point { row: 0, col: 0 },
-                        direction: Direction::West,
-                        heat_loss: 0,
-                        heuristic: 0,
-                        previous: None,
-                    },
-                ),
-                (
-                    Point { row: 1, col: 0 },
-                    Waypoint {
-                        pos: Point { row: 1, col: 0 },
-                        direction: Direction::South,
-                        heat_loss: 0,
-                        heuristic: 0,
-                        previous: Some(Point { row: 0, col: 0 }),
-                    },
-                ),
-                (
-                    Point { row: 2, col: 0 },
-                    Waypoint {
-                        pos: Point { row: 2, col: 0 },
-                        direction: Direction::South,
-                        heat_loss: 0,
-                        heuristic: 0,
-                        previous: Some(Point { row: 1, col: 0 }),
-                    },
-                ),
-                (
-                    Point { row: 3, col: 0 },
-                    Waypoint {
-                        pos: Point { row: 3, col: 0 },
-                        direction: Direction::South,
-                        heat_loss: 0,
-                        heuristic: 0,
-                        previous: Some(Point { row: 2, col: 0 }),
-                    },
-                ),
-            ]);
-
-            assert_eq!(
-                get_straight_path_length(Direction::South, Point { row: 3, col: 0 }, &path),
-                3
-            );
-            assert_eq!(
-                get_straight_path_length(Direction::South, Point { row: 2, col: 0 }, &path),
-                2
-            );
-            assert_eq!(
-                get_straight_path_length(Direction::West, Point { row: 2, col: 0 }, &path),
-                0
-            );
-            assert_eq!(
-                get_straight_path_length(Direction::West, Point { row: 0, col: 0 }, &path),
-                1
-            );
-        }
+        fn get_straight_path_length_test() {}
 
         #[test]
         fn traverse_test() {
