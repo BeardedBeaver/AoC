@@ -25,7 +25,8 @@ pub fn part_matched(arg: i32, part: i32) -> bool {
 
 pub fn get_input_file_names(day: i32, year: i32) -> Vec<String> {
     let path_env_var = format!("AOC_{}_INPUT_PATH", year);
-    let input_root_path = env::var(path_env_var).expect("AOC_2023_INPUT_PATH is not set");
+    let input_root_path =
+        env::var(path_env_var.clone()).unwrap_or_else(|err| panic!("Error: {}: {}", err, path_env_var));
     if !std::fs::metadata(&input_root_path)
         .map(|metadata| metadata.is_dir())
         .unwrap_or(false)
