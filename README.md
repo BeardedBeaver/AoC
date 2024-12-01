@@ -37,4 +37,5 @@ cargo run --release -- -y 2023 -d 5 -p 2
 
 - `aoc`: library containing basic helpers and traits
 - `year_2023`: collection of solutions for 2023
+- `year_2024`: collection of solutions for 2024
 - `aoc_runner`: a main executable that runs all available years
