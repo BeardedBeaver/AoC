@@ -10,7 +10,7 @@ impl Springs {
     fn parse(line: &str) -> Springs {
         let parts: Vec<&str> = line.split_ascii_whitespace().collect();
         assert_eq!(2, parts.len());
-        let damaged = parts[1].split(',').map(|c| c.parse::<i32>().unwrap()).collect();
+        let damaged = parts[1].split(',').map(|c| aoc::parse_or_panic(c)).collect();
         Springs {
             statuses: parts[0].as_bytes().iter().map(|c| *c as char).collect(),
             damaged: damaged,

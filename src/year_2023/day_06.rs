@@ -5,8 +5,8 @@ struct Race {
 }
 
 fn parse_races(time: &str, dist: &str) -> Vec<Race> {
-    let times = time.split_ascii_whitespace().map(|x| x.parse::<u64>().unwrap());
-    let dists = dist.split_ascii_whitespace().map(|x| x.parse::<u64>().unwrap());
+    let times = time.split_ascii_whitespace().map(|x| aoc::parse_or_panic(x));
+    let dists = dist.split_ascii_whitespace().map(|x| aoc::parse_or_panic(x));
 
     std::iter::zip(times, dists)
         .map(|(time, dist)| Race { time, dist })

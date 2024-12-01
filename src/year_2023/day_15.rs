@@ -97,7 +97,7 @@ pub mod part2 {
             let parts = s.split("=").collect::<Vec<&str>>();
             return Action::Insert(Lens {
                 label: parts[0].to_owned(),
-                focal_length: parts[1].parse().unwrap(),
+                focal_length: aoc::parse_or_panic(parts[1]),
             });
         }
         if s.contains("-") {

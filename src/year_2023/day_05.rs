@@ -21,10 +21,7 @@ struct Map {
 
 impl Map {
     pub fn append(self: &mut Map, line: &str) {
-        let values: Vec<u64> = line
-            .split_ascii_whitespace()
-            .map(|x| x.parse::<u64>().unwrap())
-            .collect();
+        let values: Vec<u64> = line.split_ascii_whitespace().map(|x| aoc::parse_or_panic(x)).collect();
         assert_eq!(values.len(), 3);
         self.ranges.push(Range {
             dest_start: values[0],
@@ -60,7 +57,7 @@ impl Data {
                 assert_eq!(2, parts.len());
                 result.seeds = parts[1]
                     .split_ascii_whitespace()
-                    .map(|x| x.parse::<u64>().unwrap())
+                    .map(|x| aoc::parse_or_panic(x))
                     .collect();
             } else if line.is_empty() {
             } else if line.as_bytes()[0].is_ascii_digit() {

@@ -17,7 +17,7 @@ fn parse_string(line: &str) -> Vec<Game> {
         };
         for word in words {
             let parts: Vec<&str> = word.trim().split(" ").collect();
-            let value = parts[0].parse().unwrap();
+            let value = aoc::parse_or_panic(parts[0]);
             match parts[1] {
                 "red" => game.red = value,
                 "green" => game.green = value,
@@ -33,7 +33,7 @@ fn parse_string(line: &str) -> Vec<Game> {
 fn get_game_index(line: &str) -> u64 {
     let words: Vec<&str> = line.split(" ").collect();
     assert_eq!(words.len(), 2);
-    return words[1].parse().unwrap();
+    aoc::parse_or_panic(words[1])
 }
 
 #[cfg(test)]

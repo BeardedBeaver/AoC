@@ -11,7 +11,7 @@ impl Hand {
         let parts: Vec<&str> = s.split_ascii_whitespace().collect();
         Hand {
             cards: parts[0].to_owned(),
-            bid: parts[1].parse::<u64>().unwrap(),
+            bid: aoc::parse_or_panic(parts[1]),
         }
     }
 

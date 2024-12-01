@@ -20,14 +20,14 @@ impl Card {
 
         let words: Vec<&str> = parts[0].split_ascii_whitespace().collect();
         assert_eq!(2, words.len());
-        result.id = words[1].parse::<u64>().unwrap();
+        result.id = aoc::parse_or_panic(words[1]);
 
         let parts: Vec<&str> = parts[1].split(" | ").collect();
         let winning: Vec<&str> = parts[0].split_ascii_whitespace().collect();
         let numbers: Vec<&str> = parts[1].split_ascii_whitespace().collect();
 
-        result.winning = winning.iter().map(|x| x.parse::<u64>().unwrap()).collect();
-        result.numbers = numbers.iter().map(|x| x.parse::<u64>().unwrap()).collect();
+        result.winning = winning.iter().map(|x| aoc::parse_or_panic(x)).collect();
+        result.numbers = numbers.iter().map(|x| aoc::parse_or_panic(x)).collect();
 
         return result;
     }

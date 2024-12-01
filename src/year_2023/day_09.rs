@@ -1,10 +1,9 @@
+use aoc::parse_or_panic;
+
 fn parse_input_file(file_name: &str) -> Vec<Vec<i64>> {
     let mut result = Vec::new();
     for line in std::fs::read_to_string(file_name).unwrap().lines() {
-        let data: Vec<i64> = line
-            .split_ascii_whitespace()
-            .map(|v| v.parse::<i64>().unwrap())
-            .collect();
+        let data: Vec<i64> = line.split_ascii_whitespace().map(|v| parse_or_panic(v)).collect();
         result.push(data);
     }
     result
