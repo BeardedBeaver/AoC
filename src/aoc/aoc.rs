@@ -23,6 +23,15 @@ pub fn part_matched(arg: i32, part: i32) -> bool {
     arg < 0 || arg == part
 }
 
+pub fn parse_or_panic<T>(string: &str) -> T
+where
+    T: std::str::FromStr,
+{
+    return string
+        .parse::<T>()
+        .unwrap_or_else(|_| panic!("Failed to convert {}", string));
+}
+
 pub fn get_input_file_names(day: i32, year: i32) -> Vec<String> {
     let path_env_var = format!("AOC_{}_INPUT_PATH", year);
     let input_root_path =

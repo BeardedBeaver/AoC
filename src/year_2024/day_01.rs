@@ -8,12 +8,8 @@ impl Input {
     fn add_line(&mut self, line: &str) {
         let parts: Vec<&str> = line.split(" ").filter(|i| !i.is_empty()).collect();
         assert!(parts.len() == 2);
-        let x1 = parts[0]
-            .parse::<i32>()
-            .unwrap_or_else(|_| panic!("Failed to convert {} to i32", parts[0]));
-        let x2 = parts[1]
-            .parse::<i32>()
-            .unwrap_or_else(|_| panic!("Failed to convert {} to i32", parts[1]));
+        let x1 = aoc::parse_or_panic::<i32>(parts[0]);
+        let x2 = aoc::parse_or_panic::<i32>(parts[1]);
         self.left.push(x1);
         self.right.push(x2);
     }
