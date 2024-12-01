@@ -343,45 +343,45 @@ pub mod part2 {
 
         #[test]
         fn solve_spring_test() {
-            // let mut solver = CachedSolver::default();
-            // let s = Springs::parse("???.### 1,1,3");
-            // assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = Springs::parse("???.### 1,1,3");
+            assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = Springs::parse(".??..??...?##. 1,1,3");
-            // assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = Springs::parse(".??..??...?##. 1,1,3");
+            assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = Springs::parse("????.######..#####. 1,6,5");
-            // assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = Springs::parse("????.######..#####. 1,6,5");
+            assert_eq!(4, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = Springs::parse("?###???????? 3,2,1");
-            // assert_eq!(10, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = Springs::parse("?###???????? 3,2,1");
+            assert_eq!(10, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
-            // assert_eq!(16384, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
+            assert_eq!(16384, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = fold(&Springs::parse("???.### 1,1,3"), 5);
-            // assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse("???.### 1,1,3"), 5);
+            assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
-            // assert_eq!(16384, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse(".??..??...?##. 1,1,3"), 5);
+            assert_eq!(16384, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = fold(&Springs::parse("?#?#?#?#?#?#?#? 1,3,1,6"), 5);
-            // assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse("?#?#?#?#?#?#?#? 1,3,1,6"), 5);
+            assert_eq!(1, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = fold(&Springs::parse("????.#...#... 4,1,1"), 5);
-            // assert_eq!(16, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse("????.#...#... 4,1,1"), 5);
+            assert_eq!(16, solver.solve_spring(&s.statuses, &s.damaged));
 
-            // let mut solver = CachedSolver::default();
-            // let s = fold(&Springs::parse("????.######..#####. 1,6,5"), 5);
-            // assert_eq!(2500, solver.solve_spring(&s.statuses, &s.damaged));
+            let mut solver = CachedSolver::default();
+            let s = fold(&Springs::parse("????.######..#####. 1,6,5"), 5);
+            assert_eq!(2500, solver.solve_spring(&s.statuses, &s.damaged));
 
             let mut solver = CachedSolver::default();
             let s = fold(&Springs::parse("?###???????? 3,2,1"), 5);
