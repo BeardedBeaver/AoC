@@ -11,76 +11,31 @@ impl Report {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn report_from_string_test() {
-        let line = "7 6 4 2 1";
-        let report = Report::from_string(line);
-        assert_eq!(report.levels, vec![7, 6, 4, 2, 1]);
-    }
-
-    #[test]
-    fn is_report_safe_test() {
-        let report = Report {
-            levels: vec![7, 6, 4, 2, 1],
-        };
-        assert_eq!(is_report_safe(&report), true);
-
-        let report = Report {
-            levels: vec![1, 2, 7, 8, 9],
-        };
-        assert_eq!(is_report_safe(&report), false);
-
-        let report = Report {
-            levels: vec![9, 7, 6, 2, 1],
-        };
-        assert_eq!(is_report_safe(&report), false);
-
-        let report = Report {
-            levels: vec![1, 3, 2, 4, 5],
-        };
-        assert_eq!(is_report_safe(&report), false);
-
-        let report = Report {
-            levels: vec![8, 6, 4, 4, 1],
-        };
-        assert_eq!(is_report_safe(&report), false);
-
-        let report = Report {
-            levels: vec![1, 3, 6, 7, 9],
-        };
-        assert_eq!(is_report_safe(&report), true);
-    }
-}
-
-fn is_report_safe(report: &Report) -> bool {
-    if report.levels.len() < 2 {
-        return true;
-    }
-
-    let mut maybe_prev_delta: Option<i32> = None;
-
-    for i in 1..report.levels.len() {
-        let delta = report.levels[i - 1] - report.levels[i];
-        if delta.abs() < 1 || delta.abs() > 3 {
-            return false;
-        }
-        if let Some(prev_delta) = maybe_prev_delta {
-            if delta.signum() != prev_delta.signum() {
-                return false;
-            }
-        }
-
-        maybe_prev_delta = Some(delta);
-    }
-    true
-}
-
 pub mod part1 {
     use super::Report;
+
+    fn is_report_safe(report: &Report) -> bool {
+        if report.levels.len() < 2 {
+            return true;
+        }
+
+        let mut maybe_prev_delta: Option<i32> = None;
+
+        for i in 1..report.levels.len() {
+            let delta = report.levels[i - 1] - report.levels[i];
+            if delta.abs() < 1 || delta.abs() > 3 {
+                return false;
+            }
+            if let Some(prev_delta) = maybe_prev_delta {
+                if delta.signum() != prev_delta.signum() {
+                    return false;
+                }
+            }
+
+            maybe_prev_delta = Some(delta);
+        }
+        true
+    }
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
@@ -88,7 +43,7 @@ pub mod part1 {
             let mut result = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
                 let report = Report::from_string(line);
-                if super::is_report_safe(&report) {
+                if is_report_safe(&report) {
                     result += 1;
                 }
             }
@@ -107,10 +62,104 @@ pub mod part1 {
             2024
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn report_from_string_test() {
+            let line = "7 6 4 2 1";
+            let report = Report::from_string(line);
+            assert_eq!(report.levels, vec![7, 6, 4, 2, 1]);
+        }
+
+        #[test]
+        fn is_report_safe_test() {
+            let report = Report {
+                levels: vec![7, 6, 4, 2, 1],
+            };
+            assert_eq!(is_report_safe(&report), true);
+
+            let report = Report {
+                levels: vec![1, 2, 7, 8, 9],
+            };
+            assert_eq!(is_report_safe(&report), false);
+
+            let report = Report {
+                levels: vec![9, 7, 6, 2, 1],
+            };
+            assert_eq!(is_report_safe(&report), false);
+
+            let report = Report {
+                levels: vec![1, 3, 2, 4, 5],
+            };
+            assert_eq!(is_report_safe(&report), false);
+
+            let report = Report {
+                levels: vec![8, 6, 4, 4, 1],
+            };
+            assert_eq!(is_report_safe(&report), false);
+
+            let report = Report {
+                levels: vec![1, 3, 6, 7, 9],
+            };
+            assert_eq!(is_report_safe(&report), true);
+        }
+    }
 }
 
 pub mod part2 {
     use super::Report;
+
+    fn is_report_safe(report: &Report, skip_index: Option<usize>) -> bool {
+        if report.levels.len() < 2 {
+            return true;
+        }
+
+        let mut maybe_prev_delta: Option<i32> = None;
+
+        let mut start = 0;
+        if skip_index.is_some() && skip_index.unwrap() == 0 {
+            start = 1;
+        }
+
+        let mut end = report.levels.len() - 1;
+        if skip_index.is_some() && skip_index.unwrap() == report.levels.len() - 1 {
+            end = report.levels.len() - 2;
+        }
+
+        let mut prev_index = start;
+
+        for i in start + 1..=end {
+            if let Some(index) = skip_index {
+                if index == i {
+                    continue;
+                }
+            }
+            let delta = report.levels[prev_index] - report.levels[i];
+            if delta.abs() < 1 || delta.abs() > 3 {
+                if skip_index.is_some() {
+                    return false;
+                } else {
+                    return is_report_safe(&report, Some(i - 1)) || is_report_safe(&report, Some(i));
+                }
+            }
+            if let Some(prev_delta) = maybe_prev_delta {
+                if delta.signum() != prev_delta.signum() {
+                    if skip_index.is_some() {
+                        return false;
+                    } else {
+                        return is_report_safe(&report, Some(i - 1)) || is_report_safe(&report, Some(i));
+                    }
+                }
+            }
+
+            maybe_prev_delta = Some(delta);
+            prev_index = i;
+        }
+        true
+    }
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
@@ -118,7 +167,7 @@ pub mod part2 {
             let mut result = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
                 let report = Report::from_string(line);
-                if super::is_report_safe(&report) {
+                if is_report_safe(&report, None) {
                     result += 1;
                 }
             }
@@ -135,6 +184,64 @@ pub mod part2 {
 
         fn year() -> i32 {
             2024
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn is_report_safe_ft_test() {
+            let report = Report {
+                levels: vec![7, 6, 4, 2, 1],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![1, 2, 7, 8, 9],
+            };
+            assert_eq!(is_report_safe(&report, None), false);
+
+            let report = Report {
+                levels: vec![9, 7, 6, 2, 1],
+            };
+            assert_eq!(is_report_safe(&report, None), false);
+
+            let report = Report {
+                levels: vec![1, 3, 2, 4, 5],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![8, 6, 4, 4, 1],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![1, 3, 6, 7, 9],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![20, 8, 6, 4, 1],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![9, 1, 6, 4, 1],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![1, 3, 6, 7, 9, 50],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
+
+            let report = Report {
+                levels: vec![1, 3, 6, 7, 5, 10],
+            };
+            assert_eq!(is_report_safe(&report, None), true);
         }
     }
 }
