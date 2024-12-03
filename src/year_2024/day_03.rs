@@ -51,10 +51,43 @@ pub mod part1 {
 }
 
 pub mod part2 {
+    #[derive(Debug, PartialEq, Eq)]
+    enum Command {
+        Mul(i64, i64),
+        Do,
+        DoNot,
+    }
+
+    fn execute(commands: &[Command]) -> i64 {
+        let mut active = true;
+        let mut result = 0;
+        for c in commands.iter() {
+            match *c {
+                Command::Mul(a, b) => {
+                    if active {
+                        result += a * b
+                    }
+                }
+                Command::Do => active = true,
+                Command::DoNot => active = false,
+            }
+        }
+        result
+    }
+
+    fn parse_commands(line: &str) -> Vec<Command> {
+        return vec![];
+    }
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            return "".to_string();
+            let mut commands = Vec::new();
+            for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
+                let line_commands = parse_commands(&line);
+                commands.extend(line_commands);
+            }
+            execute(&commands).to_string()
         }
 
         fn day() -> i32 {
@@ -72,7 +105,42 @@ pub mod part2 {
 
     #[cfg(test)]
     mod tests {
+        use crate::day_03::part2::execute;
+
+        use super::{parse_commands, Command};
+
         #[test]
-        fn test() {}
+        fn test_execute_commands() {
+            let commands = vec![
+                Command::Mul(4, 6),
+                Command::Mul(3, 7),
+                Command::DoNot,
+                Command::Mul(1, 3),
+                Command::Mul(5, 6),
+                Command::Do,
+                Command::Mul(7, 3),
+            ];
+
+            assert_eq!(execute(&commands), 4 * 6 + 3 * 7 + 3 * 7);
+        }
+
+        #[test]
+        fn test_parse_commands() {
+            let line = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
+            let commands = parse_commands(line);
+            assert_eq!(
+                commands,
+                vec![
+                    Command::Mul(2, 4),
+                    Command::DoNot,
+                    Command::Mul(5, 5),
+                    Command::Mul(11, 8),
+                    Command::Do,
+                    Command::Mul(8, 5)
+                ]
+            );
+
+            assert_eq!(execute(&commands), 48);
+        }
     }
 }
