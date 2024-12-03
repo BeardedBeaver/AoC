@@ -168,8 +168,6 @@ pub mod part2 {
     mod tests {
         use crate::day_02::is_report_safe_dampened;
 
-        use super::*;
-
         #[test]
         fn is_report_safe_dampened_test() {
             let levels = vec![7, 6, 4, 2, 1];
