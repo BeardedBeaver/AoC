@@ -11,31 +11,67 @@ impl Report {
     }
 }
 
-pub mod part1 {
-    use super::Report;
+fn get_first_unsafe_index(levels: &[i32]) -> Option<usize> {
+    if levels.len() < 2 {
+        return None;
+    }
 
-    fn is_report_safe(report: &Report) -> bool {
-        if report.levels.len() < 2 {
+    let mut maybe_prev_delta: Option<i32> = None;
+
+    for i in 1..levels.len() {
+        let delta = levels[i - 1] - levels[i];
+        if delta.abs() < 1 || delta.abs() > 3 {
+            return Some(i - 1);
+        }
+        if let Some(prev_delta) = maybe_prev_delta {
+            if delta.signum() != prev_delta.signum() {
+                return Some(i - 1);
+            }
+        }
+
+        maybe_prev_delta = Some(delta);
+    }
+    None
+}
+
+fn is_report_safe(levels: &[i32]) -> bool {
+    get_first_unsafe_index(levels).is_none()
+}
+
+fn is_report_safe_dampened(levels: &[i32]) -> bool {
+    let idx = get_first_unsafe_index(levels);
+    if idx.is_none() {
+        return true;
+    }
+    let idx = idx.unwrap();
+
+    let fixed: Vec<i32> = levels[0..idx].iter().chain(levels[idx + 1..].iter()).copied().collect();
+    if is_report_safe(&fixed) {
+        return true;
+    }
+
+    if idx > 0 {
+        let fixed: Vec<i32> = levels[0..idx - 1].iter().chain(levels[idx..].iter()).copied().collect();
+        if is_report_safe(&fixed) {
             return true;
         }
-
-        let mut maybe_prev_delta: Option<i32> = None;
-
-        for i in 1..report.levels.len() {
-            let delta = report.levels[i - 1] - report.levels[i];
-            if delta.abs() < 1 || delta.abs() > 3 {
-                return false;
-            }
-            if let Some(prev_delta) = maybe_prev_delta {
-                if delta.signum() != prev_delta.signum() {
-                    return false;
-                }
-            }
-
-            maybe_prev_delta = Some(delta);
-        }
-        true
     }
+
+    let fixed: Vec<i32> = levels[0..idx + 1]
+        .iter()
+        .chain(levels[idx + 2..].iter())
+        .copied()
+        .collect();
+    if is_report_safe(&fixed) {
+        return true;
+    }
+
+    false
+}
+
+pub mod part1 {
+    use super::is_report_safe;
+    use super::Report;
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
@@ -43,7 +79,7 @@ pub mod part1 {
             let mut result = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
                 let report = Report::from_string(line);
-                if is_report_safe(&report) {
+                if is_report_safe(&report.levels) {
                     result += 1;
                 }
             }
@@ -76,90 +112,31 @@ pub mod part1 {
 
         #[test]
         fn is_report_safe_test() {
-            let report = Report {
-                levels: vec![7, 6, 4, 2, 1],
-            };
-            assert_eq!(is_report_safe(&report), true);
+            let levels = vec![7, 6, 4, 2, 1];
+            assert_eq!(is_report_safe(&levels), true);
 
-            let report = Report {
-                levels: vec![1, 2, 7, 8, 9],
-            };
-            assert_eq!(is_report_safe(&report), false);
+            let levels = vec![1, 2, 7, 8, 9];
 
-            let report = Report {
-                levels: vec![9, 7, 6, 2, 1],
-            };
-            assert_eq!(is_report_safe(&report), false);
+            assert_eq!(is_report_safe(&levels), false);
 
-            let report = Report {
-                levels: vec![1, 3, 2, 4, 5],
-            };
-            assert_eq!(is_report_safe(&report), false);
+            let levels = vec![9, 7, 6, 2, 1];
+            assert_eq!(is_report_safe(&levels), false);
 
-            let report = Report {
-                levels: vec![8, 6, 4, 4, 1],
-            };
-            assert_eq!(is_report_safe(&report), false);
+            let levels = vec![1, 3, 2, 4, 5];
+            assert_eq!(is_report_safe(&levels), false);
 
-            let report = Report {
-                levels: vec![1, 3, 6, 7, 9],
-            };
-            assert_eq!(is_report_safe(&report), true);
+            let levels = vec![8, 6, 4, 4, 1];
+            assert_eq!(is_report_safe(&levels), false);
+
+            let levels = vec![1, 3, 6, 7, 9];
+            assert_eq!(is_report_safe(&levels), true);
         }
     }
 }
 
 pub mod part2 {
+    use super::is_report_safe_dampened;
     use super::Report;
-
-    fn is_report_safe(report: &Report, skip_index: Option<usize>) -> bool {
-        if report.levels.len() < 2 {
-            return true;
-        }
-
-        let mut maybe_prev_delta: Option<i32> = None;
-
-        let mut start = 0;
-        if skip_index.is_some() && skip_index.unwrap() == 0 {
-            start = 1;
-        }
-
-        let mut end = report.levels.len() - 1;
-        if skip_index.is_some() && skip_index.unwrap() == report.levels.len() - 1 {
-            end = report.levels.len() - 2;
-        }
-
-        let mut prev_index = start;
-
-        for i in start + 1..=end {
-            if let Some(index) = skip_index {
-                if index == i {
-                    continue;
-                }
-            }
-            let delta = report.levels[prev_index] - report.levels[i];
-            if delta.abs() < 1 || delta.abs() > 3 {
-                if skip_index.is_some() {
-                    return false;
-                } else {
-                    return is_report_safe(&report, Some(i - 1)) || is_report_safe(&report, Some(i));
-                }
-            }
-            if let Some(prev_delta) = maybe_prev_delta {
-                if delta.signum() != prev_delta.signum() {
-                    if skip_index.is_some() {
-                        return false;
-                    } else {
-                        return is_report_safe(&report, Some(i - 1)) || is_report_safe(&report, Some(i));
-                    }
-                }
-            }
-
-            maybe_prev_delta = Some(delta);
-            prev_index = i;
-        }
-        true
-    }
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
@@ -167,7 +144,7 @@ pub mod part2 {
             let mut result = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
                 let report = Report::from_string(line);
-                if is_report_safe(&report, None) {
+                if is_report_safe_dampened(&report.levels) {
                     result += 1;
                 }
             }
@@ -189,59 +166,41 @@ pub mod part2 {
 
     #[cfg(test)]
     mod tests {
+        use crate::day_02::is_report_safe_dampened;
+
         use super::*;
 
         #[test]
-        fn is_report_safe_ft_test() {
-            let report = Report {
-                levels: vec![7, 6, 4, 2, 1],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+        fn is_report_safe_dampened_test() {
+            let levels = vec![7, 6, 4, 2, 1];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![1, 2, 7, 8, 9],
-            };
-            assert_eq!(is_report_safe(&report, None), false);
+            let levels = vec![1, 2, 7, 8, 9];
+            assert_eq!(is_report_safe_dampened(&levels), false);
 
-            let report = Report {
-                levels: vec![9, 7, 6, 2, 1],
-            };
-            assert_eq!(is_report_safe(&report, None), false);
+            let levels = vec![9, 7, 6, 2, 1];
+            assert_eq!(is_report_safe_dampened(&levels), false);
 
-            let report = Report {
-                levels: vec![1, 3, 2, 4, 5],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![1, 3, 2, 4, 5];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![8, 6, 4, 4, 1],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![8, 6, 4, 4, 1];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![1, 3, 6, 7, 9],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![1, 3, 6, 7, 9];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![20, 8, 6, 4, 1],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![20, 8, 6, 4, 1];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![9, 1, 6, 4, 1],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![9, 1, 6, 4, 1];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![1, 3, 6, 7, 9, 50],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![1, 3, 6, 7, 9, 50];
+            assert_eq!(is_report_safe_dampened(&levels), true);
 
-            let report = Report {
-                levels: vec![1, 3, 6, 7, 5, 10],
-            };
-            assert_eq!(is_report_safe(&report, None), true);
+            let levels = vec![57, 55, 56, 58, 59, 62, 65, 68];
+            assert_eq!(is_report_safe_dampened(&levels), true);
         }
     }
 }
