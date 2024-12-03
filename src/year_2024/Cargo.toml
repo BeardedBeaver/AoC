@@ -8,3 +8,4 @@ path = "year_2024.rs"
 
 [dependencies]
 aoc = { path = "../aoc" }
+regex = "1.11.1"
