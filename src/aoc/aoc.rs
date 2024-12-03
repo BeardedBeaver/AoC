@@ -56,6 +56,9 @@ pub fn solve<Puzzle: crate::Puzzle>(day: i32, part: i32) {
     }
 
     let file_names = get_input_file_names(Puzzle::day(), Puzzle::year());
+    if file_names.is_empty() {
+        panic!("No input files found for year {} day {}", Puzzle::year(), Puzzle::day());
+    }
     for f in file_names.iter() {
         use std::time::Instant;
 
