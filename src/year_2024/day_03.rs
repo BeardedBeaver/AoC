@@ -107,9 +107,58 @@ pub mod part1 {
 
 pub mod part2 {
     use super::{execute, Command};
+    use std::num::ParseIntError;
+
+    #[derive(Debug)]
+    #[allow(dead_code)]
+    enum ParseError {
+        InvalidFormat,
+        ParseError(ParseIntError),
+    }
+
+    impl From<ParseIntError> for ParseError {
+        fn from(err: ParseIntError) -> Self {
+            ParseError::ParseError(err)
+        }
+    }
+
+    fn parse_mul_arguments(line: &str) -> Result<(i64, i64), ParseError> {
+        let parts = line.split(',').collect::<Vec<_>>();
+        if parts.len() != 2 {
+            return Err(ParseError::InvalidFormat);
+        }
+        Ok((parts[0].parse::<i64>()?, parts[1].parse::<i64>()?))
+    }
 
     fn parse_commands(line: &str) -> Vec<Command> {
-        return vec![];
+        let mut line = line;
+        let mut result = Vec::new();
+        while !line.is_empty() {
+            if line.starts_with("do()") {
+                result.push(Command::Do);
+                line = &line[4..];
+            } else if line.starts_with("don't()") {
+                result.push(Command::DoNot);
+                line = &line[6..];
+            } else {
+                if line.starts_with("mul(") {
+                    if let Some(closing_brace_pos) = line.chars().position(|c| c == ')') {
+                        let command_args_str = &line[4..closing_brace_pos];
+                        if let Ok(args) = parse_mul_arguments(command_args_str) {
+                            result.push(Command::Mul(args.0, args.1));
+                            line = &line[closing_brace_pos..];
+                        }
+                        line = &line[1..];
+                    } else {
+                        // closing brace not found, can exit early
+                        break;
+                    }
+                } else {
+                    line = &line[1..];
+                }
+            }
+        }
+        result
     }
 
     pub struct Puzzle {}
