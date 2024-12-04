@@ -105,7 +105,7 @@ pub mod part2 {
 
     const MAS: &str = "MAS";
 
-    fn is_x_mas(input: &[String], row: i32, col: i32, pattern: &[(i32, i32)]) -> bool {
+    fn is_mas(input: &[String], row: i32, col: i32, pattern: &[(i32, i32)]) -> bool {
         for (idx, c) in MAS.chars().enumerate() {
             let i = row + pattern[idx].0;
             let j = col + pattern[idx].1;
@@ -124,18 +124,22 @@ pub mod part2 {
     fn count_x_mas_around_pos(input: &[String], row: i32, col: i32) -> i32 {
         let mut result = 0;
         for pattern in X_MAS_INDEX_PATTERNS {
-            if is_x_mas(input, row, col, pattern) {
+            if is_mas(input, row, col, pattern) {
                 result += 1;
             }
         }
         result
     }
 
+    fn is_x_mas(input: &[String], row: i32, col: i32) -> bool {
+        count_x_mas_around_pos(&input, row, col) == 2
+    }
+
     fn count_x_mas(input: &[String]) -> i32 {
         let mut result = 0;
         for (i, row) in input.iter().enumerate() {
             for (j, char) in row.chars().enumerate() {
-                if char == 'A' && count_x_mas_around_pos(&input, i as i32, j as i32) == 2 {
+                if char == 'A' && is_x_mas(&input, i as i32, j as i32) {
                     result += 1;
                 }
             }
