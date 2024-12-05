@@ -54,6 +54,32 @@ fn parse_input(input_file_name: &str) -> (Vec<ValidationRule>, Vec<Vec<i32>>) {
     (rules, pages)
 }
 
+fn get_test_rules() -> Vec<ValidationRule> {
+    vec![
+        ValidationRule { before: 47, after: 53 },
+        ValidationRule { before: 97, after: 13 },
+        ValidationRule { before: 97, after: 61 },
+        ValidationRule { before: 97, after: 47 },
+        ValidationRule { before: 75, after: 29 },
+        ValidationRule { before: 61, after: 13 },
+        ValidationRule { before: 75, after: 53 },
+        ValidationRule { before: 29, after: 13 },
+        ValidationRule { before: 97, after: 29 },
+        ValidationRule { before: 53, after: 29 },
+        ValidationRule { before: 61, after: 53 },
+        ValidationRule { before: 97, after: 53 },
+        ValidationRule { before: 61, after: 29 },
+        ValidationRule { before: 47, after: 13 },
+        ValidationRule { before: 75, after: 47 },
+        ValidationRule { before: 97, after: 75 },
+        ValidationRule { before: 47, after: 61 },
+        ValidationRule { before: 75, after: 61 },
+        ValidationRule { before: 47, after: 29 },
+        ValidationRule { before: 75, after: 13 },
+        ValidationRule { before: 53, after: 13 },
+    ]
+}
+
 pub mod part1 {
     use super::{is_valid, parse_input, ValidationRule};
 
@@ -89,33 +115,11 @@ pub mod part1 {
 
     #[cfg(test)]
     mod tests {
-        use crate::day_05::{is_valid, part1::solve, ValidationRule};
+        use crate::day_05::{get_test_rules, is_valid, part1::solve};
 
         #[test]
         fn is_valid_test() {
-            let rules = vec![
-                ValidationRule { before: 47, after: 53 },
-                ValidationRule { before: 97, after: 13 },
-                ValidationRule { before: 97, after: 61 },
-                ValidationRule { before: 97, after: 47 },
-                ValidationRule { before: 75, after: 29 },
-                ValidationRule { before: 61, after: 13 },
-                ValidationRule { before: 75, after: 53 },
-                ValidationRule { before: 29, after: 13 },
-                ValidationRule { before: 97, after: 29 },
-                ValidationRule { before: 53, after: 29 },
-                ValidationRule { before: 61, after: 53 },
-                ValidationRule { before: 97, after: 53 },
-                ValidationRule { before: 61, after: 29 },
-                ValidationRule { before: 47, after: 13 },
-                ValidationRule { before: 75, after: 47 },
-                ValidationRule { before: 97, after: 75 },
-                ValidationRule { before: 47, after: 61 },
-                ValidationRule { before: 75, after: 61 },
-                ValidationRule { before: 47, after: 29 },
-                ValidationRule { before: 75, after: 13 },
-                ValidationRule { before: 53, after: 13 },
-            ];
+            let rules = get_test_rules();
 
             let pages = vec![
                 vec![75, 47, 61, 53, 29],
@@ -139,28 +143,95 @@ pub mod part1 {
 }
 
 pub mod part2 {
+    use std::cmp::Ordering;
+
+    use super::{is_valid, parse_input, ValidationRule};
+
+    fn fix_ordering(pages: &Vec<i32>, rules: &Vec<ValidationRule>) -> Vec<i32> {
+        let mut result = pages.clone();
+
+        result.sort_by(|left, right| {
+            for rule in rules.iter() {
+                if rule.before == *left && rule.after == *right {
+                    return Ordering::Less;
+                } else if rule.before == *right && rule.after == *left {
+                    return Ordering::Greater;
+                }
+            }
+            return Ordering::Equal;
+        });
+
+        result
+    }
+
+    fn solve(pages: &Vec<Vec<i32>>, rules: &Vec<ValidationRule>) -> i32 {
+        let mut result = 0;
+        for page_set in pages {
+            if !is_valid(&page_set, &rules) {
+                let fixed = fix_ordering(&page_set, &rules);
+                result += fixed[fixed.len() / 2];
+            }
+        }
+        result
+    }
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "".to_string()
+            let (rules, pages) = parse_input(input_file_name);
+            solve(&pages, &rules).to_string()
         }
 
         fn day() -> i32 {
-            todo!();
+            5
         }
 
         fn part() -> i32 {
-            todo!();
+            2
         }
 
         fn year() -> i32 {
-            todo!();
+            2024
         }
     }
 
     #[cfg(test)]
     mod tests {
+        use crate::day_05::{
+            get_test_rules,
+            part2::{fix_ordering, solve},
+        };
+
         #[test]
-        fn test() {}
+        fn test_fix_ordering() {
+            let rules = get_test_rules();
+            assert_eq!(
+                fix_ordering(&vec![75, 97, 47, 61, 53], &rules),
+                vec![97, 75, 47, 61, 53]
+            );
+
+            assert_eq!(fix_ordering(&vec![61, 13, 29], &rules), vec![61, 29, 13]);
+
+            assert_eq!(
+                fix_ordering(&vec![97, 13, 75, 29, 47], &rules),
+                vec![97, 75, 47, 29, 13]
+            );
+        }
+
+        #[test]
+        fn test_solve() {
+            let rules = get_test_rules();
+
+            let pages = vec![
+                vec![75, 47, 61, 53, 29],
+                vec![97, 61, 53, 29, 13],
+                vec![75, 29, 13],
+                vec![75, 97, 47, 61, 53],
+                vec![61, 13, 29],
+                vec![97, 13, 75, 29, 47],
+            ];
+
+            assert_eq!(solve(&pages, &rules), 123);
+        }
     }
 }
