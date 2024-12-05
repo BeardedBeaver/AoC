@@ -2,6 +2,7 @@ mod day_01;
 mod day_02;
 mod day_03;
 mod day_04;
+mod day_05;
 
 pub struct Solver {}
 
@@ -22,5 +23,8 @@ impl aoc::Solver for Solver {
 
         aoc::solve::<day_04::part1::Puzzle>(day, part);
         aoc::solve::<day_04::part2::Puzzle>(day, part);
+
+        aoc::solve::<day_05::part1::Puzzle>(day, part);
+        aoc::solve::<day_05::part2::Puzzle>(day, part);
     }
 }
