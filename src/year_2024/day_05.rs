@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 struct ValidationRule {
     before: i32,
     after: i32,
@@ -144,20 +145,25 @@ pub mod part1 {
 }
 
 pub mod part2 {
-    use std::cmp::Ordering;
+    use std::{cmp::Ordering, collections::HashSet};
 
     use super::{is_valid, parse_input, ValidationRule};
 
-    fn fix_ordering(pages: &Vec<i32>, rules: &Vec<ValidationRule>) -> Vec<i32> {
+    fn fix_ordering(pages: &Vec<i32>, rules: &HashSet<ValidationRule>) -> Vec<i32> {
         let mut result = pages.clone();
 
         result.sort_by(|left, right| {
-            for rule in rules.iter() {
-                if rule.before == *left && rule.after == *right {
-                    return Ordering::Less;
-                } else if rule.before == *right && rule.after == *left {
-                    return Ordering::Greater;
-                }
+            if let Some(_) = rules.get(&ValidationRule {
+                before: *left,
+                after: *right,
+            }) {
+                return Ordering::Less;
+            }
+            if let Some(_) = rules.get(&ValidationRule {
+                before: *right,
+                after: *left,
+            }) {
+                return Ordering::Greater;
             }
             return Ordering::Equal;
         });
@@ -165,11 +171,20 @@ pub mod part2 {
         result
     }
 
+    fn get_rules_set(rules: &Vec<ValidationRule>) -> HashSet<ValidationRule> {
+        let mut result: HashSet<ValidationRule> = HashSet::with_capacity(rules.len());
+        for rule in rules.iter() {
+            result.insert(*rule);
+        }
+        result
+    }
+
     fn solve(pages: &Vec<Vec<i32>>, rules: &Vec<ValidationRule>) -> i32 {
         let mut result = 0;
+        let rules_set = get_rules_set(rules);
         for page_set in pages {
             if !is_valid(&page_set, &rules) {
-                let fixed = fix_ordering(&page_set, &rules);
+                let fixed = fix_ordering(&page_set, &rules_set);
                 result += fixed[fixed.len() / 2];
             }
         }
@@ -200,12 +215,12 @@ pub mod part2 {
     mod tests {
         use crate::day_05::{
             get_test_rules,
-            part2::{fix_ordering, solve},
+            part2::{fix_ordering, get_rules_set, solve},
         };
 
         #[test]
         fn test_fix_ordering() {
-            let rules = get_test_rules();
+            let rules = get_rules_set(&get_test_rules());
             assert_eq!(
                 fix_ordering(&vec![75, 97, 47, 61, 53], &rules),
                 vec![97, 75, 47, 61, 53]
