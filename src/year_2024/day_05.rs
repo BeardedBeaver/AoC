@@ -54,6 +54,7 @@ fn parse_input(input_file_name: &str) -> (Vec<ValidationRule>, Vec<Vec<i32>>) {
     (rules, pages)
 }
 
+#[allow(dead_code)] // used in tests
 fn get_test_rules() -> Vec<ValidationRule> {
     vec![
         ValidationRule { before: 47, after: 53 },
