@@ -20,23 +20,24 @@ struct Guard {
     direction: Direction,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 enum Node {
+    #[default]
     Empty,
     Obstacle,
 }
 
 #[derive(Default)]
-struct Field {
-    nodes: Vec<Vec<Node>>,
+struct Field<N> {
+    nodes: Vec<Vec<N>>,
 }
 
-fn parse_field<I, S>(lines: I) -> (Field, Guard)
+fn parse_field<I, S>(lines: I) -> (Field<Node>, Guard)
 where
     I: Iterator<Item = S>,
     S: AsRef<str>,
 {
-    let mut field = Field::default();
+    let mut field = Field::<Node>::default();
     let mut guard = Guard::default();
     for (row_idx, line) in lines.enumerate() {
         let mut row = Vec::with_capacity(line.as_ref().len());
@@ -64,60 +65,152 @@ where
     (field, guard)
 }
 
-pub mod part1 {
-    pub struct Puzzle {}
-    impl aoc::Puzzle for Puzzle {
-        fn solve(input_file_name: &str) -> String {
-            "".to_string()
+#[derive(Debug, PartialEq, Eq)]
+enum TraverseResult {
+    Exited,
+    Stuck,
+}
+
+fn traverse(field: &Field<Node>, guard: &Guard) -> (Field<i32>, TraverseResult) {
+    let mut guard = *guard;
+    let mut path = Field::<i32>::default();
+
+    // initialize path matrix
+    for _ in 0..field.nodes.len() {
+        path.nodes.push(vec![0; field.nodes[0].len()]);
+    }
+
+    let traverse_result;
+
+    loop {
+        println!("{:?}", guard.pos);
+        path.nodes[guard.pos.row as usize][guard.pos.col as usize] |= guard.direction as i32;
+
+        let mut new_guard_pos = guard.pos;
+        match guard.direction {
+            Direction::North => new_guard_pos.row = guard.pos.row - 1,
+            Direction::West => new_guard_pos.col = guard.pos.col - 1,
+            Direction::South => new_guard_pos.row = guard.pos.row + 1,
+            Direction::East => new_guard_pos.col = guard.pos.col + 1,
+            _ => unreachable!(),
         }
 
-        fn day() -> i32 {
-            todo!();
+        if new_guard_pos.row < 0
+            || new_guard_pos.row >= field.nodes.len() as i32
+            || new_guard_pos.col < 0
+            || new_guard_pos.col >= field.nodes[0].len() as i32
+        {
+            traverse_result = TraverseResult::Exited;
+            break;
         }
 
-        fn part() -> i32 {
-            todo!();
-        }
-
-        fn year() -> i32 {
-            todo!();
+        let node = &field.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize];
+        if *node == Node::Obstacle {
+            match guard.direction {
+                Direction::North => guard.direction = Direction::East,
+                Direction::West => guard.direction = Direction::North,
+                Direction::South => guard.direction = Direction::West,
+                Direction::East => guard.direction = Direction::South,
+                _ => unreachable!(),
+            }
+        } else {
+            let path_node = &path.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize];
+            if *path_node & guard.direction as i32 != 0 {
+                traverse_result = TraverseResult::Stuck;
+                break;
+            }
+            guard.pos = new_guard_pos;
         }
     }
 
-    #[cfg(test)]
-    mod tests {
-        use crate::day_06::{parse_field, Direction, Node, Point};
+    (path, traverse_result)
+}
 
-        #[test]
-        fn test_parse_field() {
-            let lines = vec![
-                "....#.....",
-                ".........#",
-                "..........",
-                "..#.......",
-                ".......#..",
-                "..........",
-                ".#..^.....",
-                "........#.",
-                "#.........",
-                "......#...",
-            ];
+fn count_visited_nodes(path: &Field<i32>) -> i32 {
+    let mut result = 0;
+    for row in path.nodes.iter() {
+        for node in row.iter() {
+            if *node != 0 {
+                result += 1;
+            }
+        }
+    }
+    result
+}
 
-            let (field, guard) = parse_field(lines.iter());
-            assert_eq!(field.nodes.len(), 10);
-            assert_eq!(field.nodes[0].len(), 10);
+#[allow(dead_code)] // used in tests
+fn get_test_filed() -> Vec<String> {
+    vec![
+        "....#.....".to_string(),
+        ".........#".to_string(),
+        "..........".to_string(),
+        "..#.......".to_string(),
+        ".......#..".to_string(),
+        "..........".to_string(),
+        ".#..^.....".to_string(),
+        "........#.".to_string(),
+        "#.........".to_string(),
+        "......#...".to_string(),
+    ]
+}
 
-            assert_eq!(field.nodes[0][0], Node::Empty);
-            assert_eq!(field.nodes[0][4], Node::Obstacle);
-            assert_eq!(field.nodes[9][6], Node::Obstacle);
+#[cfg(test)]
+mod tests {
+    use super::{count_visited_nodes, get_test_filed, parse_field, traverse, Direction, Node, Point, TraverseResult};
 
-            assert_eq!(guard.pos, Point { row: 6, col: 4 });
-            assert_eq!(guard.direction, Direction::North);
+    #[test]
+    fn test_parse_field() {
+        let (field, guard) = parse_field(get_test_filed().iter());
+
+        assert_eq!(field.nodes.len(), 10);
+        assert_eq!(field.nodes[0].len(), 10);
+
+        assert_eq!(field.nodes[0][0], Node::Empty);
+        assert_eq!(field.nodes[0][4], Node::Obstacle);
+        assert_eq!(field.nodes[9][6], Node::Obstacle);
+
+        assert_eq!(guard.pos, Point { row: 6, col: 4 });
+        assert_eq!(guard.direction, Direction::North);
+    }
+
+    #[test]
+    fn test_traverse() {
+        let (field, guard) = parse_field(get_test_filed().iter());
+        let (path, result) = traverse(&field, &guard);
+
+        assert_eq!(result, TraverseResult::Exited);
+        assert_eq!(count_visited_nodes(&path), 41);
+        assert!(false);
+    }
+}
+
+pub mod part1 {
+    use super::{count_visited_nodes, parse_field, traverse};
+
+    pub struct Puzzle {}
+    impl aoc::Puzzle for Puzzle {
+        fn solve(input_file_name: &str) -> String {
+            let (field, guard) = parse_field(std::fs::read_to_string(input_file_name).unwrap().lines());
+            let (path, _) = traverse(&field, &guard);
+            count_visited_nodes(&path).to_string()
+        }
+
+        fn day() -> i32 {
+            6
+        }
+
+        fn part() -> i32 {
+            1
+        }
+
+        fn year() -> i32 {
+            2024
         }
     }
 }
 
 pub mod part2 {
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
