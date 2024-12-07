@@ -235,7 +235,7 @@ pub mod part2 {
         let mut result = 0;
         for (row_idx, row) in path.nodes.iter().enumerate() {
             for (col_idx, node) in row.iter().enumerate() {
-                if *node == 0 {
+                if *node == 0 || (guard.pos.row == row_idx as i32 && guard.pos.col == col_idx as i32) {
                     continue;
                 }
                 let mut altered_field = field.clone();
