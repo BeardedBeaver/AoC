@@ -46,19 +46,20 @@ where
                 '.' => row.push(Node::Empty),
                 '#' => row.push(Node::Obstacle),
                 _ => {
+                    row.push(Node::Empty);
                     guard.pos = Point {
                         row: row_idx as i32,
                         col: col_idx as i32,
                     };
-                    match c {
-                        '^' => guard.direction = Direction::North,
-                        '>' => guard.direction = Direction::East,
-                        'v' => guard.direction = Direction::South,
-                        '<' => guard.direction = Direction::West,
+                    guard.direction = match c {
+                        '^' => Direction::North,
+                        '>' => Direction::East,
+                        'v' => Direction::South,
+                        '<' => Direction::West,
                         _ => unreachable!(),
                     }
                 }
-            }
+            };
         }
         field.nodes.push(row);
     }
@@ -100,13 +101,12 @@ fn traverse(field: &Field<Node>, guard: &Guard) -> (Field<i32>, TraverseResult) 
             return (path, TraverseResult::Exited);
         }
 
-        let node = &field.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize];
-        if *node == Node::Obstacle {
+        if field.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize] == Node::Obstacle {
             match guard.direction {
                 Direction::North => guard.direction = Direction::East,
-                Direction::West => guard.direction = Direction::North,
-                Direction::South => guard.direction = Direction::West,
                 Direction::East => guard.direction = Direction::South,
+                Direction::South => guard.direction = Direction::West,
+                Direction::West => guard.direction = Direction::North,
                 _ => unreachable!(),
             }
         } else {
@@ -156,7 +156,9 @@ mod tests {
         let (field, guard) = parse_field(get_test_filed().iter());
 
         assert_eq!(field.nodes.len(), 10);
-        assert_eq!(field.nodes[0].len(), 10);
+        for row in field.nodes.iter() {
+            assert_eq!(row.len(), 10);
+        }
 
         assert_eq!(field.nodes[0][0], Node::Empty);
         assert_eq!(field.nodes[0][4], Node::Obstacle);
@@ -173,7 +175,6 @@ mod tests {
 
         assert_eq!(result, TraverseResult::Exited);
         assert_eq!(count_visited_nodes(&path), 41);
-        assert!(false);
     }
 }
 
