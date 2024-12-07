@@ -27,7 +27,7 @@ enum Node {
     Obstacle,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct Field<N> {
     nodes: Vec<Vec<N>>,
 }
@@ -207,29 +207,58 @@ pub mod part1 {
 }
 
 pub mod part2 {
+    use crate::day_06::{parse_field, traverse};
+
+    use super::{Field, Guard, Node, TraverseResult};
+
+    fn count_obstacles(field: &Field<Node>, guard: &Guard) -> i32 {
+        let (path, _) = traverse(&field, &guard);
+        let mut result = 0;
+        for (row_idx, row) in path.nodes.iter().enumerate() {
+            for (col_idx, node) in row.iter().enumerate() {
+                if *node == 0 {
+                    continue;
+                }
+                let mut altered_field = field.clone();
+                altered_field.nodes[row_idx][col_idx] = Node::Obstacle;
+                let (_, traverse_result) = traverse(&altered_field, &guard);
+                if traverse_result == TraverseResult::Stuck {
+                    result += 1;
+                }
+            }
+        }
+
+        result
+    }
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "".to_string()
+            let (field, guard) = parse_field(std::fs::read_to_string(input_file_name).unwrap().lines());
+            count_obstacles(&field, &guard).to_string()
         }
 
         fn day() -> i32 {
-            todo!();
+            6
         }
 
         fn part() -> i32 {
-            todo!();
+            2
         }
 
         fn year() -> i32 {
-            todo!();
+            2024
         }
     }
 
     #[cfg(test)]
     mod tests {
+        use crate::day_06::{get_test_filed, parse_field, part2::count_obstacles};
+
         #[test]
-        fn test() {}
+        fn test_solve() {
+            let (field, guard) = parse_field(get_test_filed().iter());
+            assert_eq!(count_obstacles(&field, &guard), 6);
+        }
     }
 }
