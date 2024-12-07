@@ -110,11 +110,12 @@ fn traverse(field: &Field<Node>, guard: &Guard) -> (Field<i32>, TraverseResult) 
                 _ => unreachable!(),
             }
         } else {
-            let path_node = &path.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize];
-            if *path_node & guard.direction as i32 != 0 {
-                return (path, TraverseResult::Stuck);
-            }
             guard.pos = new_guard_pos;
+        }
+
+        let path_node = &path.nodes[guard.pos.row as usize][guard.pos.col as usize];
+        if *path_node & (guard.direction as i32) != 0 {
+            return (path, TraverseResult::Stuck);
         }
     }
 }
@@ -175,6 +176,24 @@ mod tests {
 
         assert_eq!(result, TraverseResult::Exited);
         assert_eq!(count_visited_nodes(&path), 41);
+    }
+
+    #[test]
+    fn test_traverse_edge_case() {
+        {
+            let lines = vec!["###", "#^#", "###"];
+            let (field, guard) = parse_field(lines.iter());
+            let (_, result) = traverse(&field, &guard);
+
+            assert_eq!(result, TraverseResult::Stuck);
+        }
+        {
+            let lines = vec!["###", "#^#", "#.#"];
+            let (field, guard) = parse_field(lines.iter());
+            let (_, result) = traverse(&field, &guard);
+
+            assert_eq!(result, TraverseResult::Exited);
+        }
     }
 }
 
