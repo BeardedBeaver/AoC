@@ -80,10 +80,7 @@ fn traverse(field: &Field<Node>, guard: &Guard) -> (Field<i32>, TraverseResult) 
         path.nodes.push(vec![0; field.nodes[0].len()]);
     }
 
-    let traverse_result;
-
     loop {
-        println!("{:?}", guard.pos);
         path.nodes[guard.pos.row as usize][guard.pos.col as usize] |= guard.direction as i32;
 
         let mut new_guard_pos = guard.pos;
@@ -100,8 +97,7 @@ fn traverse(field: &Field<Node>, guard: &Guard) -> (Field<i32>, TraverseResult) 
             || new_guard_pos.col < 0
             || new_guard_pos.col >= field.nodes[0].len() as i32
         {
-            traverse_result = TraverseResult::Exited;
-            break;
+            return (path, TraverseResult::Exited);
         }
 
         let node = &field.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize];
@@ -116,14 +112,11 @@ fn traverse(field: &Field<Node>, guard: &Guard) -> (Field<i32>, TraverseResult) 
         } else {
             let path_node = &path.nodes[new_guard_pos.row as usize][new_guard_pos.col as usize];
             if *path_node & guard.direction as i32 != 0 {
-                traverse_result = TraverseResult::Stuck;
-                break;
+                return (path, TraverseResult::Stuck);
             }
             guard.pos = new_guard_pos;
         }
     }
-
-    (path, traverse_result)
 }
 
 fn count_visited_nodes(path: &Field<i32>) -> i32 {
@@ -185,13 +178,16 @@ mod tests {
 }
 
 pub mod part1 {
+    use crate::day_06::TraverseResult;
+
     use super::{count_visited_nodes, parse_field, traverse};
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
             let (field, guard) = parse_field(std::fs::read_to_string(input_file_name).unwrap().lines());
-            let (path, _) = traverse(&field, &guard);
+            let (path, traverse_result) = traverse(&field, &guard);
+            assert_eq!(traverse_result, TraverseResult::Exited);
             count_visited_nodes(&path).to_string()
         }
 
