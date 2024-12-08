@@ -221,7 +221,15 @@ pub mod part2 {
     use super::{parse_equation, Equation, Operation};
 
     fn concat(a: u64, b: u64) -> u64 {
-        aoc::parse_or_panic(&(a.to_string() + &b.to_string()))
+        let mut b_copy = b;
+        let mut digits = 0;
+
+        while b_copy > 0 {
+            digits += 1;
+            b_copy /= 10;
+        }
+
+        a * 10_u64.pow(digits as u32) + b
     }
 
     fn is_valid(value: u64, operands: &[u64], operation: Operation, target: u64) -> bool {
