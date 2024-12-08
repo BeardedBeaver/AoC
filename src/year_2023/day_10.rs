@@ -1,8 +1,4 @@
-#[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
-struct Point {
-    row: u64,
-    col: u64,
-}
+type Point = aoc::Point<u64>;
 
 #[derive(Default)]
 struct Map {
@@ -265,10 +261,10 @@ pub mod part2 {
         s.len() % 2 == 1
     }
 
-    // Here we go over all points, skip ones that are the loop itself, and for each point
+    // Here we go over all Points, skip ones that are the loop itself, and for each Point
     // count how many "edges" of the loop we cross going from this node to the right.
     // The trick is to correctly handle going by the edge (see is_inside function for this).
-    // Note that we need to count not only blank points, but pipes that are not the part
+    // Note that we need to count not only blank Points, but pipes that are not the part
     // of the main loop as well.
     fn solve(map: &Map) -> u64 {
         assert!(!map.nodes.is_empty());

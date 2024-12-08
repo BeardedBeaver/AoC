@@ -1,3 +1,5 @@
+type Point = aoc::Point<i32>;
+
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Direction {
     #[default]
@@ -6,12 +8,6 @@ enum Direction {
     West = 0x2,
     South = 0x4,
     East = 0x8,
-}
-
-#[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
-struct Point {
-    row: i32,
-    col: i32,
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]

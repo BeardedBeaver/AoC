@@ -2,11 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 // cSpell: words antinodes drow dcol
 
-#[derive(Debug, Default, Hash, PartialEq, Eq, Copy, Clone)]
-struct Point {
-    row: i32,
-    col: i32,
-}
+type Point = aoc::Point<i32>;
 
 type AntennaPositions = Vec<Point>;
 

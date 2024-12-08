@@ -1,15 +1,9 @@
 use std::collections::{BinaryHeap, HashMap};
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-struct Point {
-    row: i32,
-    col: i32,
-}
+type Point = aoc::Point<i32>;
 
-impl Point {
-    fn manhattan_distance(self, another: &Point) -> i32 {
-        (self.row - another.row).abs() + (self.col - another.col).abs()
-    }
+fn manhattan_distance(one: &Point, another: &Point) -> i32 {
+    (one.row - another.row).abs() + (one.col - another.col).abs()
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -165,7 +159,7 @@ impl Field {
             pos: start,
             direction: Direction::Unknown,
             heat_loss: 0,
-            heuristic: start.manhattan_distance(&finish),
+            heuristic: manhattan_distance(&start, &finish),
             previous: None,
         };
 
@@ -195,7 +189,7 @@ impl Field {
                     pos: *point,
                     direction: *direction,
                     heat_loss: heat_loss,
-                    heuristic: point.manhattan_distance(&finish),
+                    heuristic: manhattan_distance(&point, &finish),
                     previous: Some(waypoint.pos),
                 };
 

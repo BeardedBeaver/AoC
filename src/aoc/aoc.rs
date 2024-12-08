@@ -1,5 +1,9 @@
 use std::env;
 
+mod point;
+
+pub use point::Point;
+
 pub trait Puzzle {
     fn solve(file_name: &str) -> String;
     fn year() -> i32;
