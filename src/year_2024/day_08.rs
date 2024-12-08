@@ -188,22 +188,26 @@ mod tests {
 }
 
 pub mod part1 {
+    use super::{get_antinodes, parse_input};
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "".to_string()
+            let (size, points) = parse_input(std::fs::read_to_string(input_file_name).unwrap().lines());
+            let antinodes = get_antinodes(&points, size);
+            antinodes.len().to_string()
         }
 
         fn day() -> i32 {
-            todo!();
+            8
         }
 
         fn part() -> i32 {
-            todo!();
+            1
         }
 
         fn year() -> i32 {
-            todo!();
+            2024
         }
     }
 
