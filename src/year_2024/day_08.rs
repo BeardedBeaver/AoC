@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Hash, PartialEq, Eq, Copy, Clone)]
 struct Point {
     row: i32,
     col: i32,
@@ -40,9 +40,60 @@ where
     (size, result)
 }
 
+fn antinodes_for_pair_of_points(p1: &Point, p2: &Point) -> (Point, Point) {
+    let drow = p1.row - p2.row;
+    let dcol = p1.col - p2.col;
+
+    let mut res1 = p1.clone();
+    let mut res2 = p2.clone();
+
+    res1.row += drow;
+    res1.col += dcol;
+
+    res2.row -= drow;
+    res2.col -= dcol;
+
+    (res1, res2)
+}
+
+fn is_inside(p: &Point, size: &Point) -> bool {
+    p.row >= 0 && p.col >= 0 && p.row < size.row && p.col < size.col
+}
+
+fn get_antinode_positions(points: &AntennaPositions, size: &Point) -> HashSet<Point> {
+    let mut result = HashSet::new();
+
+    for i in 0..points.len() {
+        for j in i + 1..points.len() {
+            let (p1, p2) = antinodes_for_pair_of_points(&points[i], &points[j]);
+            if is_inside(&p1, &size) {
+                result.insert(p1);
+            }
+            if is_inside(&p2, &size) {
+                result.insert(p2);
+            }
+        }
+    }
+
+    result
+}
+
+fn get_antinodes(points: &HashMap<char, AntennaPositions>, size: Point) -> HashSet<Point> {
+    let mut result = HashSet::new();
+
+    for (c, positions) in points.iter() {
+        let p = get_antinode_positions(positions, &size);
+        result.extend(p.into_iter());
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
-    use super::parse_input;
+    use std::{collections::HashSet, hash::Hash};
+
+    use super::{antinodes_for_pair_of_points, get_antinodes, parse_input, Point};
 
     #[test]
     fn parse_input_basic_test() {
@@ -64,6 +115,75 @@ mod tests {
         assert_eq!(b.len(), 1);
         assert_eq!(b[0].row, 2);
         assert_eq!(b[0].col, 3);
+    }
+
+    #[test]
+    fn antinodes_for_pair_of_points_test() {
+        {
+            let p1 = Point { row: 3, col: 2 };
+            let p2 = Point { row: 4, col: 4 };
+
+            let expected_points: HashSet<Point> = HashSet::from([Point { row: 2, col: 0 }, Point { row: 5, col: 6 }]);
+
+            let (res1, res2) = antinodes_for_pair_of_points(&p1, &p2);
+            assert_ne!(res1, res2);
+            assert!(expected_points.contains(&res1));
+            assert!(expected_points.contains(&res2));
+        }
+
+        {
+            let p1 = Point { row: 3, col: 2 };
+            let p2 = Point { row: 2, col: 4 };
+
+            let expected_points: HashSet<Point> = HashSet::from([Point { row: 4, col: 0 }, Point { row: 1, col: 6 }]);
+
+            let (res1, res2) = antinodes_for_pair_of_points(&p1, &p2);
+            assert_ne!(res1, res2);
+            assert!(expected_points.contains(&res1));
+            assert!(expected_points.contains(&res2));
+        }
+    }
+
+    #[test]
+    fn get_antinodes_test() {
+        {
+            let lines = vec![
+                "..........",
+                "..........",
+                "..........",
+                "....a.....",
+                "........a.",
+                ".....a....",
+                "..........",
+                "..........",
+                "..........",
+                "..........",
+            ];
+
+            let (size, points) = parse_input(lines.iter());
+            let antinodes = get_antinodes(&points, size);
+            assert_eq!(antinodes.len(), 4);
+        }
+
+        {
+            let lines = vec![
+                "............",
+                "........0...",
+                ".....0......",
+                ".......0....",
+                "....0.......",
+                "......A.....",
+                "............",
+                "............",
+                "........A...",
+                ".........A..",
+                "............",
+                "............",
+            ];
+            let (size, points) = parse_input(lines.iter());
+            let antinodes = get_antinodes(&points, size);
+            assert_eq!(antinodes.len(), 14);
+        }
     }
 }
 
