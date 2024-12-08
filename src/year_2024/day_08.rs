@@ -58,6 +58,37 @@ fn antinodes_for_pair_of_points(p1: &Point, p2: &Point) -> (Point, Point) {
     (res1, res2)
 }
 
+fn all_antinodes_for_pair_of_points(p1: &Point, p2: &Point, size: &Point) -> HashSet<Point> {
+    let drow = p1.row - p2.row;
+    let dcol = p1.col - p2.col;
+
+    let mut result = HashSet::default();
+    result.insert(p1.clone());
+    result.insert(p2.clone());
+
+    let mut p = p1.clone();
+    loop {
+        p.row += drow;
+        p.col += dcol;
+        if !is_inside(&p, size) {
+            break;
+        }
+        result.insert(p.clone());
+    }
+
+    p = p2.clone();
+    loop {
+        p.row -= drow;
+        p.col -= dcol;
+        if !is_inside(&p, size) {
+            break;
+        }
+        result.insert(p.clone());
+    }
+
+    result
+}
+
 fn is_inside(p: &Point, size: &Point) -> bool {
     p.row >= 0 && p.col >= 0 && p.row < size.row && p.col < size.col
 }
@@ -80,7 +111,7 @@ fn get_antinode_positions(points: &AntennaPositions, size: &Point) -> HashSet<Po
     result
 }
 
-fn get_antinodes(points: &HashMap<char, AntennaPositions>, size: Point) -> HashSet<Point> {
+fn get_antinodes(points: &HashMap<char, AntennaPositions>, size: &Point) -> HashSet<Point> {
     let mut result = HashSet::new();
 
     for (_, positions) in points.iter() {
@@ -91,9 +122,26 @@ fn get_antinodes(points: &HashMap<char, AntennaPositions>, size: Point) -> HashS
     result
 }
 
+fn get_all_antinodes(points: &HashMap<char, AntennaPositions>, size: &Point) -> HashSet<Point> {
+    let mut result = HashSet::new();
+
+    for (_, positions) in points.iter() {
+        for i in 0..positions.len() {
+            for j in i + 1..positions.len() {
+                let antinodes = all_antinodes_for_pair_of_points(&positions[i], &positions[j], &size);
+                result.extend(antinodes.into_iter());
+            }
+        }
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
+
+    use crate::day_08::get_all_antinodes;
 
     use super::{antinodes_for_pair_of_points, get_antinodes, parse_input, Point};
 
@@ -163,7 +211,7 @@ mod tests {
             ];
 
             let (size, points) = parse_input(lines.iter());
-            let antinodes = get_antinodes(&points, size);
+            let antinodes = get_antinodes(&points, &size);
             assert_eq!(antinodes.len(), 4);
         }
 
@@ -183,8 +231,50 @@ mod tests {
                 "............",
             ];
             let (size, points) = parse_input(lines.iter());
-            let antinodes = get_antinodes(&points, size);
+            let antinodes = get_antinodes(&points, &size);
             assert_eq!(antinodes.len(), 14);
+        }
+    }
+
+    #[test]
+    fn get_all_antinodes_test() {
+        {
+            let lines = vec![
+                "T.........",
+                "...T......",
+                ".T........",
+                "..........",
+                "..........",
+                "..........",
+                "..........",
+                "..........",
+                "..........",
+                "..........",
+            ];
+
+            let (size, points) = parse_input(lines.iter());
+            let antinodes = get_all_antinodes(&points, &size);
+            assert_eq!(antinodes.len(), 9);
+        }
+        {
+            let lines = vec![
+                "............",
+                "........0...",
+                ".....0......",
+                ".......0....",
+                "....0.......",
+                "......A.....",
+                "............",
+                "............",
+                "........A...",
+                ".........A..",
+                "............",
+                "............",
+            ];
+
+            let (size, points) = parse_input(lines.iter());
+            let antinodes = get_all_antinodes(&points, &size);
+            assert_eq!(antinodes.len(), 34);
         }
     }
 }
@@ -196,7 +286,7 @@ pub mod part1 {
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
             let (size, points) = parse_input(std::fs::read_to_string(input_file_name).unwrap().lines());
-            let antinodes = get_antinodes(&points, size);
+            let antinodes = get_antinodes(&points, &size);
             antinodes.len().to_string()
         }
 
@@ -212,37 +302,29 @@ pub mod part1 {
             2024
         }
     }
-
-    #[cfg(test)]
-    mod tests {
-        #[test]
-        fn test() {}
-    }
 }
 
 pub mod part2 {
+    use super::{get_all_antinodes, parse_input};
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "".to_string()
+            let (size, points) = parse_input(std::fs::read_to_string(input_file_name).unwrap().lines());
+            let antinodes = get_all_antinodes(&points, &size);
+            antinodes.len().to_string()
         }
 
         fn day() -> i32 {
-            todo!();
+            8
         }
 
         fn part() -> i32 {
-            todo!();
+            2
         }
 
         fn year() -> i32 {
-            todo!();
+            2024
         }
-    }
-
-    #[cfg(test)]
-    mod tests {
-        #[test]
-        fn test() {}
     }
 }
