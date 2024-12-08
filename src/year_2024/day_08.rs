@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+// cSpell: words antinodes drow dcol
+
 #[derive(Debug, Default, Hash, PartialEq, Eq, Copy, Clone)]
 struct Point {
     row: i32,
@@ -81,7 +83,7 @@ fn get_antinode_positions(points: &AntennaPositions, size: &Point) -> HashSet<Po
 fn get_antinodes(points: &HashMap<char, AntennaPositions>, size: Point) -> HashSet<Point> {
     let mut result = HashSet::new();
 
-    for (c, positions) in points.iter() {
+    for (_, positions) in points.iter() {
         let p = get_antinode_positions(positions, &size);
         result.extend(p.into_iter());
     }
@@ -91,7 +93,7 @@ fn get_antinodes(points: &HashMap<char, AntennaPositions>, size: Point) -> HashS
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashSet, hash::Hash};
+    use std::collections::HashSet;
 
     use super::{antinodes_for_pair_of_points, get_antinodes, parse_input, Point};
 
