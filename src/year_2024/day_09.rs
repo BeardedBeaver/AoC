@@ -158,15 +158,18 @@ mod tests {
 }
 
 pub mod part1 {
-    use super::parse_input_line;
+    use super::{compact, get_checksum, parse_input_line};
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
+            let mut result = 0;
             for line in std::fs::read_to_string(input_file_name).unwrap().lines() {
-                let input = parse_input_line(line);
+                let mut disk_line = parse_input_line(line);
+                compact(&mut disk_line);
+                result += get_checksum(&disk_line);
             }
-            "".to_string()
+            result.to_string()
         }
 
         fn day() -> i32 {
