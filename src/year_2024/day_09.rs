@@ -9,9 +9,41 @@ fn parse_input_line(line: &str) -> Vec<Option<i32>> {
     result
 }
 
+fn compact(disk_line: &mut Vec<Option<i32>>) {
+    let mut lp = 0;
+    let mut rp = disk_line.len() - 1;
+
+    while lp < rp {
+        if disk_line[lp].is_some() {
+            lp += 1;
+        } else if disk_line[rp].is_none() {
+            rp -= 1;
+        } else {
+            disk_line.swap(lp, rp);
+            lp += 1;
+            rp -= 1;
+        }
+    }
+}
+
+fn get_checksum(disk_line: &Vec<Option<i32>>) -> u64 {
+    let mut result = 0;
+
+    for (idx, maybe_value) in disk_line.iter().enumerate() {
+        if maybe_value.is_none() {
+            break;
+        }
+        result += idx as u64 * maybe_value.unwrap() as u64;
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
-    use super::parse_input_line;
+    use crate::day_09::get_checksum;
+
+    use super::{compact, parse_input_line};
 
     #[test]
     fn parse_input_line_test() {
@@ -87,6 +119,41 @@ mod tests {
                 Some(9),
             ]
         );
+    }
+
+    #[test]
+    fn compact_test() {
+        let line = "12345";
+        let mut disk_line = parse_input_line(line);
+        compact(&mut disk_line);
+        assert_eq!(
+            disk_line,
+            vec![
+                Some(0),
+                Some(2),
+                Some(2),
+                Some(1),
+                Some(1),
+                Some(1),
+                Some(2),
+                Some(2),
+                Some(2),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ]
+        );
+    }
+
+    #[test]
+    fn get_checksum_test() {
+        let line = "2333133121414131402";
+        let mut disk_line = parse_input_line(line);
+        compact(&mut disk_line);
+        assert_eq!(get_checksum(&disk_line), 1928);
     }
 }
 
