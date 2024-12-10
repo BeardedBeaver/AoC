@@ -1,14 +1,5 @@
+use aoc::Direction;
 type Point = aoc::Point<i32>;
-
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Direction {
-    #[default]
-    Unknown = 0x0,
-    North = 0x1,
-    West = 0x2,
-    South = 0x4,
-    East = 0x8,
-}
 
 #[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 struct Guard {

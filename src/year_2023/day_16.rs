@@ -1,3 +1,5 @@
+use aoc::Direction;
+
 #[derive(Debug, Default, Clone)]
 struct Node {
     kind: char,
@@ -8,14 +10,6 @@ struct Node {
 struct Field {
     nodes: Vec<Vec<Node>>,
     column_count: usize,
-}
-
-#[derive(Clone, Copy)]
-enum Direction {
-    North = 0x1,
-    West = 0x2,
-    South = 0x4,
-    East = 0x8,
 }
 
 #[derive(Clone, Copy)]
@@ -86,6 +80,7 @@ impl Field {
                             col: beam.col + 1,
                             direction: beam.direction,
                         }),
+                        _ => unreachable!(),
                     },
                     // vertical splitter (reflect north and south)
                     '|' => match &beam.direction {
@@ -111,6 +106,7 @@ impl Field {
                             col: beam.col,
                             direction: beam.direction,
                         }),
+                        _ => unreachable!(),
                     },
                     // horizontal splitter (reflect west and east)
                     '-' => match &beam.direction {
@@ -136,6 +132,7 @@ impl Field {
                             col: beam.col + 1,
                             direction: beam.direction,
                         }),
+                        _ => unreachable!(),
                     },
                     // diagonal mirror
                     '/' => match &beam.direction {
@@ -159,6 +156,7 @@ impl Field {
                             col: beam.col,
                             direction: Direction::South,
                         }),
+                        _ => unreachable!(),
                     },
 
                     // another diagonal mirror
@@ -183,6 +181,7 @@ impl Field {
                             col: beam.col,
                             direction: Direction::North,
                         }),
+                        _ => unreachable!(),
                     },
                     _ => unreachable!(),
                 }

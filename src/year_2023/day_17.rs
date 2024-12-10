@@ -1,30 +1,11 @@
 use std::collections::{BinaryHeap, HashMap};
 
+use aoc::Direction;
+
 type Point = aoc::Point<i32>;
 
 fn manhattan_distance(one: &Point, another: &Point) -> i32 {
     (one.row - another.row).abs() + (one.col - another.col).abs()
-}
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-enum Direction {
-    Unknown = 0,
-    North = 0x1,
-    West = 0x2,
-    South = 0x4,
-    East = 0x8,
-}
-
-impl Direction {
-    fn opposite(&self) -> Direction {
-        match self {
-            Direction::Unknown => return Direction::Unknown,
-            Direction::North => return Direction::South,
-            Direction::West => return Direction::East,
-            Direction::South => return Direction::North,
-            Direction::East => return Direction::West,
-        };
-    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
