@@ -18,8 +18,9 @@ fn get_first_unsafe_index(levels: &[i32]) -> Option<usize> {
 
     let mut maybe_prev_delta: Option<i32> = None;
 
-    for i in 1..levels.len() {
-        let delta = levels[i - 1] - levels[i];
+    // iterate over adjacent pairs of values
+    for (i, chunk) in levels.iter().zip(levels.iter().skip(1)).enumerate() {
+        let delta = chunk.0 - chunk.1;
         if delta.abs() < 1 || delta.abs() > 3 {
             return Some(i - 1);
         }
