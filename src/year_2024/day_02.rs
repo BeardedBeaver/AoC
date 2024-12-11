@@ -22,11 +22,11 @@ fn get_first_unsafe_index(levels: &[i32]) -> Option<usize> {
     for (i, chunk) in levels.iter().zip(levels.iter().skip(1)).enumerate() {
         let delta = chunk.0 - chunk.1;
         if delta.abs() < 1 || delta.abs() > 3 {
-            return Some(i - 1);
+            return Some(i);
         }
         if let Some(prev_delta) = maybe_prev_delta {
             if delta.signum() != prev_delta.signum() {
-                return Some(i - 1);
+                return Some(i);
             }
         }
 
