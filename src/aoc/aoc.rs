@@ -37,7 +37,7 @@ where
 {
     return string
         .parse::<T>()
-        .unwrap_or_else(|_| panic!("Failed to convert {}", string));
+        .unwrap_or_else(|_| panic!("Failed to convert \"{}\" to {}", string, std::any::type_name::<T>()));
 }
 
 pub fn get_input_file_names(day: i32, year: i32) -> Vec<String> {
