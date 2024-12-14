@@ -61,13 +61,42 @@ mod tests {
 
     #[test]
     fn node_test() {
+        // given
         let mut field: Field<i32> = Field::with_size(4, 9);
+
+        // when: get a mutable node and change it
         let node = field.node_mut(0, 0);
         assert!(node.is_some());
         *node.unwrap() = 5;
 
+        // then: both immutable and mutable nodes should
+        //       hold an updated value
         let node = field.node(0, 0);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 5);
+        let node = field.node_mut(0, 0);
+        assert!(node.is_some());
+        assert_eq!(*node.unwrap(), 5);
+
+        // when: update another node
+        let node = field.node_mut(2, 4);
+        assert!(node.is_some());
+        *node.unwrap() = 12;
+
+        // then: old value is still the same, the new
+        //       value is updated
+        let node = field.node(0, 0);
+        assert!(node.is_some());
+        assert_eq!(*node.unwrap(), 5);
+        let node = field.node_mut(0, 0);
+        assert!(node.is_some());
+        assert_eq!(*node.unwrap(), 5);
+
+        let node = field.node(2, 4);
+        assert!(node.is_some());
+        assert_eq!(*node.unwrap(), 12);
+        let node = field.node_mut(2, 4);
+        assert!(node.is_some());
+        assert_eq!(*node.unwrap(), 12);
     }
 }
