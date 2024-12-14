@@ -37,14 +37,22 @@ where
         self.col_count
     }
 
-    pub fn node_mut<'a>(&'a mut self, row: usize, col: usize) -> Option<&'a mut Node> {
+    pub fn try_get_mut<'a>(&'a mut self, row: usize, col: usize) -> Option<&'a mut Node> {
         let idx = self.flat_index(row, col)?;
         Some(&mut self.nodes[idx])
     }
 
-    pub fn node<'a>(&'a self, row: usize, col: usize) -> Option<&'a Node> {
+    pub fn try_get<'a>(&'a self, row: usize, col: usize) -> Option<&'a Node> {
         let idx = self.flat_index(row, col)?;
         Some(&self.nodes[idx])
+    }
+
+    pub fn get_mut(&mut self, row: usize, col: usize) -> &mut Node {
+        self.try_get_mut(row, col).expect("Index out of bounds")
+    }
+
+    pub fn get(&self, row: usize, col: usize) -> &Node {
+        self.try_get(row, col).expect("Index out of bounds")
     }
 
     fn flat_index(&self, row: usize, col: usize) -> Option<usize> {
@@ -82,12 +90,12 @@ mod tests {
         assert_eq!(field.get_row_count(), 2);
         assert_eq!(field.get_col_count(), 3);
 
-        let node = field.node(0, 1);
+        let node = field.try_get(0, 1);
         assert!(node.is_some());
         let node = node.unwrap();
         assert_eq!(*node, 1);
 
-        let node = field.node(1, 2);
+        let node = field.try_get(1, 2);
         assert!(node.is_some());
         let node = node.unwrap();
         assert_eq!(*node, 5);
@@ -99,54 +107,54 @@ mod tests {
         let mut field: Field<i32> = Field::with_size(4, 9);
 
         // when: get a mutable node and change it
-        let node = field.node_mut(0, 0);
+        let node = field.try_get_mut(0, 0);
         assert!(node.is_some());
         *node.unwrap() = 5;
 
         // then: both immutable and mutable nodes should
         //       hold an updated value
-        let node = field.node(0, 0);
+        let node = field.try_get(0, 0);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 5);
-        let node = field.node_mut(0, 0);
+        let node = field.try_get_mut(0, 0);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 5);
 
         // when: update another node
-        let node = field.node_mut(2, 4);
+        let node = field.try_get_mut(2, 4);
         assert!(node.is_some());
         *node.unwrap() = 12;
 
         // then: old value is still the same, the new
         //       value is updated
-        let node = field.node(0, 0);
+        let node = field.try_get(0, 0);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 5);
-        let node = field.node_mut(0, 0);
+        let node = field.try_get_mut(0, 0);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 5);
 
-        let node = field.node(2, 4);
+        let node = field.try_get(2, 4);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 12);
-        let node = field.node_mut(2, 4);
+        let node = field.try_get_mut(2, 4);
         assert!(node.is_some());
         assert_eq!(*node.unwrap(), 12);
 
         // when: get both mutable and immutable reference to
         //       the node outside of field bounds
-        let node = field.node_mut(4, 0);
+        let node = field.try_get_mut(4, 0);
         assert!(node.is_none());
-        let node = field.node_mut(4, 9);
+        let node = field.try_get_mut(4, 9);
         assert!(node.is_none());
-        let node = field.node_mut(0, 9);
+        let node = field.try_get_mut(0, 9);
         assert!(node.is_none());
 
-        let node = field.node(4, 0);
+        let node = field.try_get(4, 0);
         assert!(node.is_none());
-        let node = field.node(4, 9);
+        let node = field.try_get(4, 9);
         assert!(node.is_none());
-        let node = field.node(0, 9);
+        let node = field.try_get(0, 9);
         assert!(node.is_none());
     }
 }
