@@ -329,12 +329,30 @@ pub mod part2 {
 
     #[cfg(test)]
     mod tests {
-        use crate::day_12::{get_test_input, parse_field, solve, CalculatorPart2};
+        use crate::day_12::{get_garden_params, get_test_input, parse_field, solve, CalculatorPart2, Point};
 
         #[test]
         fn solve_test() {
             let mut field = parse_field(get_test_input().iter());
             assert_eq!(solve::<CalculatorPart2>(&mut field), 1206);
+        }
+
+        #[test]
+        fn solve_test2() {
+            let lines = vec!["EEEEE", "EXXXX", "EEEEE", "EXXXX", "EEEEE"];
+            let mut field = parse_field(lines.iter());
+
+            let params = get_garden_params(&mut field, &Point { row: 0, col: 0 });
+            assert_eq!(params.area, 17);
+            assert_eq!(params.sides_count, 12);
+
+            let params = get_garden_params(&mut field, &Point { row: 1, col: 1 });
+            assert_eq!(params.area, 4);
+            assert_eq!(params.sides_count, 4);
+
+            let params = get_garden_params(&mut field, &Point { row: 3, col: 1 });
+            assert_eq!(params.area, 4);
+            assert_eq!(params.sides_count, 4);
         }
     }
 }
