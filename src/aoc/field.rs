@@ -37,6 +37,13 @@ where
         self.col_count
     }
 
+    pub fn is_inside(&self, row: i32, col: i32) -> bool {
+        if row < 0 || col < 0 || row as usize >= self.row_count || col as usize >= self.col_count {
+            return false;
+        }
+        true
+    }
+
     pub fn try_get_mut<'a>(&'a mut self, row: usize, col: usize) -> Option<&'a mut Node> {
         let idx = self.flat_index(row, col)?;
         Some(&mut self.nodes[idx])
