@@ -94,7 +94,10 @@ fn count_edges(field: &Field, points: &Vec<Point>) -> i32 {
             } else if count == 3 {
                 result += 1;
             } else if count == 2 && is_opposite_corner {
-                result += 2;
+                // 0X
+                // X0
+                // only count one corner since we'll count the second one on the second node
+                result += 1;
             }
         }
     }
@@ -345,14 +348,15 @@ pub mod part2 {
             let params = get_garden_params(&mut field, &Point { row: 0, col: 0 });
             assert_eq!(params.area, 17);
             assert_eq!(params.sides_count, 12);
+        }
 
-            let params = get_garden_params(&mut field, &Point { row: 1, col: 1 });
-            assert_eq!(params.area, 4);
-            assert_eq!(params.sides_count, 4);
+        #[test]
+        fn solve_test3() {
+            let lines = vec!["AAB", "ABA", "AAA"];
+            let mut field = parse_field(lines.iter());
 
-            let params = get_garden_params(&mut field, &Point { row: 3, col: 1 });
-            assert_eq!(params.area, 4);
-            assert_eq!(params.sides_count, 4);
+            let params = get_garden_params(&mut field, &Point { row: 0, col: 0 });
+            assert_eq!(params.sides_count, 10);
         }
     }
 }
