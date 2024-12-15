@@ -127,7 +127,7 @@ fn solve(field: &mut Field) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::day_12::{equal, is_node_visited, visit};
+    use crate::day_12::{equal, is_node_visited, solve, visit};
 
     use super::{get_garden_params, parse_field, Point};
 
@@ -165,8 +165,44 @@ mod tests {
         ];
         let mut field = parse_field(lines.iter());
         let params = get_garden_params(&mut field, &Point { row: 0, col: 0 });
-        assert_eq!(params.area, 12);
         assert_eq!(params.perimeter, 18);
+        assert_eq!(params.area, 12);
+
+        let params = get_garden_params(&mut field, &Point { row: 0, col: 4 });
+        assert_eq!(params.area, 4);
+        assert_eq!(params.perimeter, 8);
+
+        let params = get_garden_params(&mut field, &Point { row: 0, col: 6 });
+        assert_eq!(params.area, 14);
+        assert_eq!(params.perimeter, 28);
+
+        let params = get_garden_params(&mut field, &Point { row: 4, col: 9 });
+        assert_eq!(params.area, 13);
+        assert_eq!(params.perimeter, 18);
+
+        let params = get_garden_params(&mut field, &Point { row: 5, col: 2 });
+        assert_eq!(params.area, 14);
+        assert_eq!(params.perimeter, 22);
+    }
+
+    #[test]
+    fn solve_test() {
+        let lines = vec![
+            // cspell: disable
+            "RRRRIICCFF",
+            "RRRRIICCCF",
+            "VVRRRCCFFF",
+            "VVRCCCJFFF",
+            "VVVVCJJCFE",
+            "VVIVCCJJEE",
+            "VVIIICJJEE",
+            "MIIIIIJJEE",
+            "MIIISIJEEE",
+            "MMMISSJEEE",
+            // cspell: enable
+        ];
+        let mut field = parse_field(lines.iter());
+        assert_eq!(solve(&mut field), 1930);
     }
 }
 
