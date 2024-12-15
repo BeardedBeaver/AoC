@@ -56,6 +56,9 @@ static CORNERS: [[(i32, i32); 3]; 4] = [
     [(1, 0), (1, -1), (0, -1)],
 ];
 
+// Iterate over each corner triplet of indices of each given point
+// and count number of corners based on number of filled and unfilled
+// nodes ("filled" being a part of the current area)
 fn count_edges(field: &Field, points: &Vec<Point>) -> i32 {
     assert!(!points.is_empty());
     let mut result = 0;
@@ -79,19 +82,21 @@ fn count_edges(field: &Field, points: &Vec<Point>) -> i32 {
                     if points.iter().position(|p| *p == corner_point).is_none() {
                         count += 1;
                     }
-                    if idx == 1 && points.iter().position(|p| *p == corner_point).is_some() {
-                        is_opposite_corner = true;
+                    if idx == 1 {
+                        is_opposite_corner = points.iter().position(|p| *p == corner_point).is_some();
                     }
                 }
             }
 
-            if count == 1 || count == 3 {
+            if count == 1 && !is_opposite_corner {
+                // only count a corner with 1 missing point if it's diag
+                result += 1;
+            } else if count == 3 {
                 result += 1;
             } else if count == 2 && is_opposite_corner {
                 result += 2;
             }
         }
-        println!("{:?} {}", point, result);
     }
 
     result
@@ -329,7 +334,7 @@ pub mod part2 {
         #[test]
         fn solve_test() {
             let mut field = parse_field(get_test_input().iter());
-            // assert_eq!(solve::<CalculatorPart2>(&mut field), 1206);
+            assert_eq!(solve::<CalculatorPart2>(&mut field), 1206);
         }
     }
 }
