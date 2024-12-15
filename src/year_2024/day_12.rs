@@ -25,6 +25,7 @@ where
 struct GardenParams {
     perimeter: i32,
     area: i32,
+    sides_count: i32,
 }
 
 fn compute_perimeter(field: &Field, points: &Vec<Point>) -> i32 {
@@ -79,6 +80,7 @@ fn get_garden_params(field: &mut Field, origin: &Point) -> GardenParams {
     GardenParams {
         perimeter: compute_perimeter(&field, &nodes),
         area: nodes.len() as i32,
+        sides_count: 0,
     }
 }
 
@@ -102,9 +104,29 @@ fn visit_node(field: &mut Field, pos: &Point) {
     visit(&mut field.get_mut(pos.row as usize, pos.col as usize));
 }
 
+trait Calculator {
+    fn calc(params: &GardenParams) -> i32;
+}
+
+struct CalculatorPart1 {}
+
+impl Calculator for CalculatorPart1 {
+    fn calc(params: &GardenParams) -> i32 {
+        params.area * params.perimeter
+    }
+}
+
+struct CalculatorPart2 {}
+
+impl Calculator for CalculatorPart2 {
+    fn calc(params: &GardenParams) -> i32 {
+        params.area * params.sides_count
+    }
+}
+
 // ascii uppercase letters occupy 65-90 code range, we'll use the leftmost
 // bit to indicate if this node was visited or not
-fn solve(field: &mut Field) -> i32 {
+fn solve<C: Calculator>(field: &mut Field) -> i32 {
     let mut result = 0;
     for row in 0..field.get_row_count() {
         for col in 0..field.get_col_count() {
@@ -118,16 +140,34 @@ fn solve(field: &mut Field) -> i32 {
                     col: col as i32,
                 },
             );
-            result += params.area as i32 * params.perimeter as i32;
+            result += C::calc(&params);
         }
     }
 
     result
 }
 
+#[allow(dead_code)] // used in tests
+fn get_test_input() -> Vec<String> {
+    vec![
+        // cspell: disable
+        "RRRRIICCFF".to_string(),
+        "RRRRIICCCF".to_string(),
+        "VVRRRCCFFF".to_string(),
+        "VVRCCCJFFF".to_string(),
+        "VVVVCJJCFE".to_string(),
+        "VVIVCCJJEE".to_string(),
+        "VVIIICJJEE".to_string(),
+        "MIIIIIJJEE".to_string(),
+        "MIIISIJEEE".to_string(),
+        "MMMISSJEEE".to_string(),
+        // cspell: enable
+    ]
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::day_12::{equal, is_node_visited, solve, visit};
+    use crate::day_12::{equal, get_test_input, is_node_visited, visit};
 
     use super::{get_garden_params, parse_field, Point};
 
@@ -149,21 +189,7 @@ mod tests {
 
     #[test]
     fn get_garden_params_test() {
-        let lines = vec![
-            // cspell: disable
-            "RRRRIICCFF",
-            "RRRRIICCCF",
-            "VVRRRCCFFF",
-            "VVRCCCJFFF",
-            "VVVVCJJCFE",
-            "VVIVCCJJEE",
-            "VVIIICJJEE",
-            "MIIIIIJJEE",
-            "MIIISIJEEE",
-            "MMMISSJEEE",
-            // cspell: enable
-        ];
-        let mut field = parse_field(lines.iter());
+        let mut field = parse_field(get_test_input().iter());
         let params = get_garden_params(&mut field, &Point { row: 0, col: 0 });
         assert_eq!(params.perimeter, 18);
         assert_eq!(params.area, 12);
@@ -184,36 +210,16 @@ mod tests {
         assert_eq!(params.area, 14);
         assert_eq!(params.perimeter, 22);
     }
-
-    #[test]
-    fn solve_test() {
-        let lines = vec![
-            // cspell: disable
-            "RRRRIICCFF",
-            "RRRRIICCCF",
-            "VVRRRCCFFF",
-            "VVRCCCJFFF",
-            "VVVVCJJCFE",
-            "VVIVCCJJEE",
-            "VVIIICJJEE",
-            "MIIIIIJJEE",
-            "MIIISIJEEE",
-            "MMMISSJEEE",
-            // cspell: enable
-        ];
-        let mut field = parse_field(lines.iter());
-        assert_eq!(solve(&mut field), 1930);
-    }
 }
 
 pub mod part1 {
-    use super::{parse_field, solve};
+    use super::{parse_field, solve, CalculatorPart1};
 
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
             let mut field = parse_field(std::fs::read_to_string(input_file_name).unwrap().lines());
-            solve(&mut field).to_string()
+            solve::<CalculatorPart1>(&mut field).to_string()
         }
 
         fn day() -> i32 {
@@ -231,16 +237,24 @@ pub mod part1 {
 
     #[cfg(test)]
     mod tests {
+        use crate::day_12::{get_test_input, parse_field, solve, CalculatorPart1};
+
         #[test]
-        fn test() {}
+        fn solve_test() {
+            let mut field = parse_field(get_test_input().iter());
+            assert_eq!(solve::<CalculatorPart1>(&mut field), 1930);
+        }
     }
 }
 
 pub mod part2 {
+    use super::{parse_field, solve, CalculatorPart2};
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "".to_string()
+            let mut field = parse_field(std::fs::read_to_string(input_file_name).unwrap().lines());
+            solve::<CalculatorPart2>(&mut field).to_string()
         }
 
         fn day() -> i32 {
@@ -258,7 +272,12 @@ pub mod part2 {
 
     #[cfg(test)]
     mod tests {
+        use crate::day_12::{get_test_input, parse_field, solve, CalculatorPart2};
+
         #[test]
-        fn test() {}
+        fn solve_test() {
+            let mut field = parse_field(get_test_input().iter());
+            assert_eq!(solve::<CalculatorPart2>(&mut field), 1206);
+        }
     }
 }
