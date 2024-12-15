@@ -23,11 +23,11 @@ where
 }
 
 struct GardenParams {
-    perimeter: u8,
-    area: u8,
+    perimeter: i32,
+    area: i32,
 }
 
-fn compute_perimeter(field: &Field, points: &Vec<Point>) -> u8 {
+fn compute_perimeter(field: &Field, points: &Vec<Point>) -> i32 {
     assert!(!points.is_empty());
     let mut result = 0;
     let value = field.get(points[0].row as usize, points[0].col as usize).clone();
@@ -78,7 +78,7 @@ fn get_garden_params(field: &mut Field, origin: &Point) -> GardenParams {
     }
     GardenParams {
         perimeter: compute_perimeter(&field, &nodes),
-        area: nodes.len() as u8,
+        area: nodes.len() as i32,
     }
 }
 
