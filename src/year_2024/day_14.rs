@@ -74,6 +74,30 @@ fn count_robots(robots: &Vec<Robot>, field_size: &Point) -> (i32, i32, i32, i32)
     result
 }
 
+fn calculate_position_variance(robots: &[Robot]) -> (f64, f64) {
+    let n = robots.len() as f64;
+    if n == 0.0 {
+        return (0.0, 0.0);
+    }
+
+    let (sum_row, sum_col) = robots
+        .iter()
+        .fold((0, 0), |(s_row, s_col), r| (s_row + r.pos.row, s_col + r.pos.col));
+
+    let mean_row = sum_row as f64 / n;
+    let mean_col = sum_col as f64 / n;
+
+    let (var_row, var_col) = robots.iter().fold((0.0, 0.0), |(v_row, v_col), r| {
+        (
+            v_row + (r.pos.row as f64 - mean_row).powi(2),
+            v_col + (r.pos.col as f64 - mean_col).powi(2),
+        )
+    });
+
+    (var_row / n, var_col / n)
+}
+
+#[allow(dead_code)] // used in tests
 fn get_test_input() -> Vec<String> {
     vec![
         "p=0,4 v=3,-3".to_string(),
@@ -217,10 +241,26 @@ pub mod part1 {
 }
 
 pub mod part2 {
+    use std::i32;
+
+    use crate::day_14::{calculate_position_variance, move_robot, parse_robots, Point};
+
     pub struct Puzzle {}
     impl aoc::Puzzle for Puzzle {
         fn solve(input_file_name: &str) -> String {
-            "".to_string()
+            let mut robots = parse_robots(std::fs::read_to_string(input_file_name).unwrap().lines());
+            let field_size = Point { row: 103, col: 101 };
+            for i in 0..10000 {
+                for j in 0..robots.len() {
+                    move_robot(&mut robots[j], &field_size);
+                }
+                let var = calculate_position_variance(&robots);
+                // println!("{:.2} {:.2}", var.0, var.1);
+                if var.0 < 500.0 && var.1 < 500.0 {
+                    return (i + 1).to_string();
+                }
+            }
+            unreachable!()
         }
 
         fn day() -> i32 {
