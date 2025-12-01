@@ -10,7 +10,7 @@ impl<I> Point<I>
 where
     I: num_traits::PrimInt,
 {
-    pub fn neighbors_orthogonal(&self) -> PointNeighborIterator<I> {
+    pub fn neighbors_orthogonal(&self) -> PointNeighborIterator<'_, I> {
         PointNeighborIterator {
             point: &self,
             current_index: 0,
@@ -18,7 +18,7 @@ where
         }
     }
 
-    pub fn neighbors_diagonal(&self) -> PointNeighborIterator<I> {
+    pub fn neighbors_diagonal(&self) -> PointNeighborIterator<'_, I> {
         PointNeighborIterator {
             point: &self,
             current_index: 0,
@@ -26,7 +26,7 @@ where
         }
     }
 
-    pub fn neighbors_all(&self) -> PointNeighborIterator<I> {
+    pub fn neighbors_all(&self) -> PointNeighborIterator<'_, I> {
         PointNeighborIterator {
             point: &self,
             current_index: 0,
