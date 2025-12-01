@@ -22,4 +22,5 @@ fn main() {
 
     year_2023::Solver::solve(args.year, args.day, args.part);
     year_2024::Solver::solve(args.year, args.day, args.part);
+    year_2025::Solver::solve(args.year, args.day, args.part);
 }

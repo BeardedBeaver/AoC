@@ -76,6 +76,7 @@ dependencies = [
  "clap",
  "year_2023",
  "year_2024",
+ "year_2025",
 ]
 
 [[package]]
@@ -357,4 +358,11 @@ version = "0.1.0"
 dependencies = [
  "aoc",
  "regex",
+]
+
+[[package]]
+name = "year_2025"
+version = "0.1.0"
+dependencies = [
+ "aoc",
 ]

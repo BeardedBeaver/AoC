@@ -1,0 +1,13 @@
+[package]
+name = "year_2025"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "year_2025.rs"
+
+[dependencies]
+aoc = { path = "../aoc" }
+
+[lints.rust]
+unused = "allow"
