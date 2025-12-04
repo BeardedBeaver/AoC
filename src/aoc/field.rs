@@ -1,4 +1,4 @@
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Field<Node> {
     nodes: Vec<Node>,
     row_count: usize,
